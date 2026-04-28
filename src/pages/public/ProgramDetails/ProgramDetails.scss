@@ -1,0 +1,126 @@
+// ==========================================
+// FILE: ProgramDetails.scss
+// Chứa toàn bộ style cho trang Chi tiết Lệnh
+// ==========================================
+@import '../../../styles/variables.scss';
+
+
+.explain-container {
+  width: 100%;
+  max-width: 1050px; // Giới hạn độ rộng để người dùng dễ đọc (không bị tràn viền màn hình to)
+  margin: 0 auto;
+  padding: 20px;
+  text-align: left;
+
+  /* Nút quay lại ở đầu trang */
+  .back-btn {
+    padding-left: 0;
+    margin-bottom: 20px;
+    // color: var(--color-primary);
+  }
+
+  /* Màn hình chờ (Loading) và Lỗi (Error) */
+  .status-container {
+    text-align: center;
+    padding: 100px;
+
+    &.error {
+      padding: 50px;
+    }
+  }
+
+  /* ========================================
+     PHẦN 1: THÔNG TIN LỆNH (PROGRAM CARD)
+     ======================================== */
+  .program-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); // Đổ bóng nhẹ cho Card
+    border-left: 6px solid $color-primary; // Viền xanh dương đặc trưng ở cạnh trái
+    margin-bottom: 32px;
+
+    .program-title {
+      margin-bottom: 0;
+      color: $color-primary;
+    }
+
+    .category-tags-wrapper {
+      margin-bottom: 16px;
+    }
+  }
+
+  /* Text mô tả chung dùng cho cả Program và Group */
+  .description-text {
+    font-size: 1.2rem;
+    white-space: pre-wrap; // Cực kỳ quan trọng: Giữ nguyên dấu \n từ Database để hiển thị xuống dòng
+  }
+
+  /* ========================================
+     PHẦN 2: COMPONENT VÍ DỤ (EXAMPLES)
+     ======================================== */
+  .example-box {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: $bg-main; // Nền xám nhạt để tách biệt với mô tả
+    border-radius: 6px;
+    border-left: 4px solid #d9d9d9; // Viền xám đậm bên trái
+
+    .example-title {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .example-cmd-tag {
+      font-size: 1rem;
+      padding: 2px 8px;
+      margin-bottom: 4px;
+    }
+  }
+
+  /* ========================================
+     PHẦN 3: NHÓM CỜ (OPTION GROUPS)
+     ======================================== */
+  .group-section {
+    margin-top: 55px;
+
+    .group-title {
+      color: #595959;
+      border-bottom: 2px solid #e8e8e8; // Đường kẻ gạch dưới tên nhóm
+      padding-bottom: 8px;
+    }
+
+    .group-desc {
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+    }
+
+    .group-options-wrapper {
+      margin-top: 16px;
+      // padding-left: 16px; // Thụt lề vào một chút để thấy cấp bậc cha-con
+    }
+  }
+
+  /* ========================================
+     PHẦN 4: CỜ LỆNH (OPTIONS CARD)
+     ======================================== */
+  .option-card {
+    margin-bottom: 16px;
+    border-left: 5px solid $color-primary; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-radius: 6px;
+
+    .option-tags-wrapper {
+      margin-bottom: 8px;
+    }
+
+    .option-tag {
+      font-size: 1.1rem;
+      padding: 4px 10px;
+    }
+
+    .option-desc {
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+  }
+}

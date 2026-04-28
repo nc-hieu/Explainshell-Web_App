@@ -1,0 +1,64 @@
+// Import các biến giao diện (Theme Variables)
+@import '../../styles/variables.scss';
+
+.ant-layout-sider-children {
+  background-color: $bg-header;
+
+  .ant-menu{
+  background-color: $bg-header;
+    
+  }
+}
+.admin-layout {
+  min-height: 100vh;
+  background-color: var(--bg-main); // Nền tự động Sáng/Tối
+
+  /* Khu vực Logo */
+  .admin-logo {
+    height: 32px;
+    margin: 16px;
+    background: rgba(128, 128, 128, 0.15); // Nền xám trong suốt phù hợp cả 2 chế độ
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-primary); // Dùng màu Vàng Cam thương hiệu cho Logo
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    
+  }
+
+  /* Khu vực Header (Thanh điều hướng trên cùng) */
+  .admin-header {
+    padding: 0;
+    background-color: var(--bg-header);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 24px;
+    // border-bottom: 1px solid var(--border-color); // Thêm đường kẻ dưới cho tách biệt
+
+    /* Nút đóng/mở thanh Sidebar */
+    .header-toggle-btn {
+      font-size: 16px;
+      width: 64px;
+      height: 64px;
+      color: var(--text-primary); // Chữ tự động đen/trắng
+
+      &:hover {
+        color: var(--color-primary) !important; // Hover đổi sang màu nhấn
+      }
+    }
+  }
+
+  /* Khu vực Nội dung chính (Content) */
+  .admin-content {
+    margin: 24px 16px;
+    padding: 24px;
+    background-color: var(--bg-card); // Nền khối (trắng hoặc đen sáng)
+    border-radius: 8px; // Bo góc
+    border: 1px solid var(--border-color); // Thêm viền mờ cho khối nội dung nổi bật
+    min-height: 280px;
+  }
+}

@@ -1,0 +1,55 @@
+// ==========================================
+// FILE: src/styles/variables.scss
+// Quản lý Theme (Light/Dark Mode) cho dự án
+// ==========================================
+
+/* 1. KHAI BÁO BIẾN THEO CHẾ ĐỘ SÁNG/TỐI */
+:root {
+  // --- LIGHT MODE (Tông sáng, nền trắng/xám nhạt) ---
+  --bg-main: #f3f4f6;       // Xám nhạt cho nền toàn trang
+  --bg-card: #ffffff;       // Trắng tinh cho thẻ/khối
+  --bg-header: #ffffff;     // Trắng cho header
+  --bg-sider: #ffffff;      // Trắng cho sidebar
+  --bg-hover: #f9fafb;      // Màu hover xám rất nhẹ
+  
+  --text-primary: #111827;  // Chữ chính (Đen xám)
+  --text-secondary: #6b7280;// Chữ phụ (Xám vừa)
+  --border-color: #e5e7eb;  // Viền xám nhạt
+
+  --color-primary: #fbbf24; // Màu Vàng Cam chủ đạo (Giữ nguyên để nhận diện thương hiệu)
+//   --color-primary: #f9a115;
+}
+
+[data-theme='dark'] {
+  // --- DARK MODE (Tông tối, phân tích từ ảnh của bạn) ---
+  --bg-main: #161a24;       // Đen ánh xanh
+  --bg-card: #1c1e26;       // Đen sáng hơn cho thẻ
+  --bg-header: #070b15;     // Đen sậm cho header
+  --bg-sider: #111319;      // Đen cho sidebar
+  --bg-hover: #252836;      // Nền khi hover
+  
+  --text-primary: #ffffff;  // Chữ trắng
+  --text-secondary: #9ca3af;// Chữ xám nhạt
+  --border-color: #2d313f;  // Viền tối
+
+  --color-primary: #fbbf24; // Màu Vàng Cam chủ đạo
+}
+
+/* 2. GÁN VÀO BIẾN SCSS ĐỂ GÕ CHO NHANH (Tùy chọn) */
+// Thay vì mỗi lần dùng phải gõ var(--bg-main), bạn có thể gọi $bg-main cho gọn
+$bg-main: var(--bg-main);
+$bg-card: var(--bg-card);
+$bg-header: var(--bg-header);
+$bg-sider: var(--bg-sider);
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$border-color: var(--border-color);
+$color-primary: var(--color-primary);
+
+/* Cài đặt chung cho thẻ body */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease; // Hiệu ứng chuyển theme mượt mà
+}
