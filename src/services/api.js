@@ -3,7 +3,7 @@ import axios from 'axios';
 // 1. Khởi tạo một instance của Axios với URL gốc
 const api = axios.create({
   // Lấy URL từ biến môi trường chúng ta vừa tạo ở file .env
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
