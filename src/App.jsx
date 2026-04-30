@@ -32,7 +32,8 @@ const App = () => {
         
         // 2. Ghi đè màu sắc cốt lõi (Màu Vàng Cam chủ đạo)
         token: {
-          colorPrimary: '#fbbf24', 
+          // colorPrimary: '#fbbf24', 
+          colorPrimary: isDarkMode ? '#fbbf24' : '#ffb700', 
           // colorPrimary: isDarkMode ? '#161a24' : '#f3f4f6', 
           fontFamily: "'Inter', system-ui, sans-serif",
           borderRadius: 8, // Bo góc nhè nhẹ cho nút bấm và ô input
@@ -50,8 +51,9 @@ const App = () => {
             colorBgContainer: isDarkMode ? '#1c1e26' : '#ffffff',
           },
           Button: {
-          // Cách 2: Tác động riêng biệt và chi tiết cho Button
           colorTextLightSolid: isDarkMode ? '#ffffff' : '#000000',
+
+          
         },
         }
       }}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Button } from 'antd'; // Đã xóa theme vì không cần thiết nữa
+import { useAuthStore } from '../../store/authStore';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -20,6 +21,7 @@ const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const {logout} = useAuthStore();
 
   const menuItems = [
     { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Tổng quan' },
@@ -29,6 +31,7 @@ const AdminLayout = () => {
   ];
 
   const handleLogout = () => {
+    logout();
     navigate('/admin/login');
   };
 
@@ -41,7 +44,6 @@ const AdminLayout = () => {
         </div>
         
         <Menu
-          // Đã XÓA theme="dark" ở đây để Menu tự động chuyển Dark/Light theo hệ thống
           mode="inline"
           selectedKeys={[location.pathname]}
           onClick={({ key }) => navigate(key)}

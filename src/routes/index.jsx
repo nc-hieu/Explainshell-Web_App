@@ -20,6 +20,10 @@ import Programs from '../pages/admin/Programs';
 import Categories from '../pages/admin/Categories';
 import Options from '../pages/admin/Options';
 
+
+import NotFound from '../pages/NotFound'
+import AdminProtectedRoute from '../components/common/AdminProtectedRoute';
+
 const router = createBrowserRouter([
   // --- KHU VỰC PUBLIC ---
   {
@@ -55,21 +59,30 @@ const router = createBrowserRouter([
     ]
   },
 
-  // --- KHU VỰC ADMIN (Giữ nguyên như cũ) ---
+  // --- KHU VỰC ADMIN ---
   {
     path: '/admin/login',
     element: <Login />,
   },
   {
-    path: '/admin',
-    element: <AdminLayout />,
+    element: <AdminProtectedRoute />,
     children: [
-      { path: 'dashboard', element: <Dashboard /> },
-      { path: 'programs', element: <Programs /> },
-      { path: 'options', element: <Options /> },
-      { path: 'categories', element: <Categories /> },
-      { index: true, element: <Navigate to="/admin/dashboard" replace /> }
-    ],
+      {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+          { path: 'dashboard', element: <Dashboard /> },
+          { path: 'programs', element: <Programs /> },
+          { path: 'options', element: <Options /> },
+          { path: 'categories', element: <Categories /> },
+          { index: true, element: <Navigate to="/admin/dashboard" replace /> }
+        ],
+      }
+    ]
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ]);
 

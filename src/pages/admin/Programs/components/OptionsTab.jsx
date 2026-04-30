@@ -213,7 +213,7 @@ const OptionsTab = ({ editingProgram }) => {
             <Input.TextArea rows={3} placeholder="Giải thích ý nghĩa của cờ này..." />
           </Form.Item>
 
-          <div style={{ display: 'flex', gap: '24px', backgroundColor: '#f5f5f5', padding: '12px', borderRadius: '8px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '24px', padding: '12px', borderRadius: '8px', marginBottom: '24px' }}>
             <Form.Item name="is_featured" valuePropName="checked" style={{ marginBottom: 0 }}>
               <Switch checkedChildren="Nổi bật" unCheckedChildren="Bình thường" />
             </Form.Item>
