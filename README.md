@@ -23,7 +23,7 @@ docker build -t exsh-webapp .
 ### 2. Chạy Docker Container
 Sau khi quá trình build hoàn tất, khởi chạy ứng dụng bằng lệnh:
 ```Bash
-docker run -idd \ 
+docker run -idt \ 
 -p 5173:5173 \
 --name explainshell-frontend \
 -e VITE_API_URL=http://192.168.1.10:8000/api/v1 \     #Thay thành IP của API Server
