@@ -26,7 +26,7 @@ Sau khi quá trình build hoàn tất, khởi chạy ứng dụng bằng lệnh:
 docker run -idd \ 
 -p 5173:5173 \
 --name explainshell-frontend \
--e VITE_API_URL=http://192.168.1.10:8000/api/v1     #Thay thành IP của API Server
+-e VITE_API_URL=http://192.168.1.10:8000/api/v1 \     #Thay thành IP của API Server
 exsh-webapp
 ```
 Bây giờ, bạn hãy mở trình duyệt và truy cập vào: http://localhost:5173
