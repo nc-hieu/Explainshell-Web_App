@@ -1,0 +1,105 @@
+/* 
+  Sử dụng các biến CSS cục bộ được định nghĩa trong styles/variables.scss 
+  để tự động đồng bộ màu theo Theme Sáng/Tối 
+*/
+
+.tiptap-container {
+  border: 1px solid var(--border-color);
+  border-radius: 8px; /* Khớp với border-radius: 8 của Ant Design trong App.jsx */
+  overflow: hidden;
+  background-color: var(--bg-card);
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: var(--color-primary); /* Đổi màu viền khi hover bằng màu cam chủ đạo */
+  }
+
+  /* THANH CÔNG CỤ (TOOLBAR) */
+  .tiptap-toolbar {
+    padding: 8px;
+    background-color: var(--bg-main); /* Màu nền nhẹ nhàng cho thanh công cụ */
+    border-bottom: 1px solid var(--border-color);
+    
+    /* Ghi đè màu của các nút bấm AntD bên trong Toolbar để khớp với nền */
+    .ant-btn-default {
+      background-color: var(--bg-card);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+      
+      &:hover {
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+      }
+    }
+  }
+
+  /* VÙNG NHẬP LIỆU (EDITOR CONTENT) */
+  .tiptap-editor-content {
+    .tiptap {
+      min-height: 200px;
+      padding: 16px;
+      outline: none; 
+      color: var(--text-primary); /* Màu chữ chính */
+      
+      /* Căn chỉnh đoạn văn cơ bản */
+      p {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+      }
+
+      /* Định dạng danh sách */
+      ul, ol {
+        padding-left: 24px;
+        margin-bottom: 1rem;
+      }
+
+      /* ĐỊNH DẠNG KHỐI MÃ (CODE BLOCK) - Rất quan trọng cho Explainshell */
+      pre {
+        /* Bất kể Sáng hay Tối, Code Block thường vẫn giữ nền tối cho chuẩn dân lập trình */
+        background-color: #1e1e1e; 
+        color: #d4d4d4; 
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-family: 'Courier New', Courier, monospace;
+        overflow-x: auto; /* Cho phép cuộn ngang nếu code quá dài */
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+
+        /* Dòng code bên trong thẻ pre */
+        code {
+          color: inherit;
+          padding: 0;
+          background: none;
+          font-size: 0.95rem;
+        }
+      }
+
+      /* ĐỊNH DẠNG INLINE CODE (Chữ được bôi đen và bấm nút Code <>) */
+      code {
+        background-color: var(--bg-hover);
+        color: var(--color-primary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+      }
+
+      /* Tiêu đề (Header 1, 2, 3...) */
+      h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary);
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+}
+
+/* ĐỊNH DẠNG CHUNG (TÙY CHỌN): Nếu bạn muốn TipTap hiển thị Placeholder */
+/* Bạn sẽ cần cài thêm extension @tiptap/extension-placeholder nếu muốn dùng CSS này */
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--text-secondary);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

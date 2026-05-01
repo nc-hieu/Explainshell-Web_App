@@ -3,6 +3,7 @@ import { Form, Input, Button, message } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { generateSlug } from '../../../../utils/helpers';
 import { programService } from '../../../../services/program.service';
+import RichTextEditor from '../../../../components/common/RichTextEditor';
 
 const GeneralTab = ({ editingProgram, setEditingProgram, fetchPrograms }) => {
   const [formGeneral] = Form.useForm();
@@ -64,7 +65,7 @@ const GeneralTab = ({ editingProgram, setEditingProgram, fetchPrograms }) => {
       </Form.Item>
 
       <Form.Item name="description" label="Mô tả">
-        <Input.TextArea rows={4} placeholder="Nhập mô tả về lệnh..." />
+        <RichTextEditor />
       </Form.Item>
       
       <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>

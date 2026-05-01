@@ -124,3 +124,55 @@
     }
   }
 }
+
+.tiptap-content {
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 1rem;
+
+  /* Giữ nguyên khoảng cách đoạn văn */
+  p {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Hiển thị danh sách dấu chấm/số đẹp mắt */
+  ul, ol {
+    padding-left: 24px;
+    margin-bottom: 1rem;
+  }
+
+  /* Hiển thị thẻ in nghiêng, gạch chân chuẩn xác */
+  em { font-style: italic; }
+  u { text-decoration: underline; }
+  s { text-decoration: line-through; }
+  strong { font-weight: bold; }
+
+  /* ĐỊNH DẠNG KHỐI MÃ (CODE BLOCK) - Kế thừa từ thiết kế cũ */
+  pre {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    overflow-x: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+
+    code {
+      color: inherit;
+      padding: 0;
+      background: none;
+      font-size: 0.95rem;
+    }
+  }
+
+  /* ĐỊNH DẠNG MÃ NỘI TUYẾN (INLINE CODE) */
+  code {
+    background-color: var(--bg-hover);
+    color: var(--color-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+  }
+}

@@ -5,6 +5,7 @@ import { ArrowLeftOutlined, BookOutlined, CodeOutlined } from '@ant-design/icons
 import { programService } from '../../../services/program.service';
 import { historyService } from '../../../services/history.service';
 import { useAuthStore } from '../../../store/authStore';
+import DOMPurify from 'dompurify';
 
 // Import file SCSS và Component dùng chung
 import './ProgramDetails.scss'; 
@@ -127,8 +128,23 @@ const ProgramDetails = () => {
             {programData.categories.map(cat => <Tag key={cat.id} color="purple">{cat.name}</Tag>)}
           </Space>
         )}
-        <Paragraph className="description-text">{programData.description || 'Chưa có mô tả cho lệnh này.'}</Paragraph>
-        {renderExamples(generalExamples, "Ví dụ:")}
+        
+        {/* ===================== */}
+        {programData.description ? (
+          <div 
+            className="description-text tiptap-content" 
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(programData.description) }} 
+          />
+        ) : (
+          <Paragraph className="description-text">
+            Chưa có mô tả cho lệnh này.
+          </Paragraph>
+        )}
+        <hr></hr>
+        <br></br>
+        {/* ===================== */}
+
+        {renderExamples(generalExamples, "Ví Dụ")}
       </Card>
 
       {/* 2. HIỂN THỊ THEO TỪNG NHÓM (OPTION GROUPS) */}
