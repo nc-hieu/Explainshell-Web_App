@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, Popconfirm, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { optionGroupService } from '../../../../services/optionGroup.service';
+import RichTextEditor from '../../../../components/common/RichTextEditor';
 
 const GroupsTab = ({ editingProgram }) => {
   const [groupsList, setGroupsList] = useState([]);
@@ -110,7 +111,7 @@ const GroupsTab = ({ editingProgram }) => {
             <Input placeholder="VD: Compression Options" />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3} placeholder="Mô tả nhóm cờ này..." />
+            <RichTextEditor />
           </Form.Item>
           <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
             <Button onClick={() => setIsGroupModalVisible(false)} style={{ marginRight: 8 }}>Hủy</Button>

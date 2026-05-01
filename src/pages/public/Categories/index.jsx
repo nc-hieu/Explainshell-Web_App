@@ -3,6 +3,7 @@ import { Typography, Row, Col, Card, Input, Space, Tag, Spin, Empty } from 'antd
 import { SearchOutlined, FolderOpenOutlined, CodeOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { categoryService } from '../../../services/category.service';
+import { getImageUrl } from '../../../utils/helpers';
 
 import './Categories.scss';
 
@@ -101,9 +102,25 @@ const Categories = () => {
                 onClick={() => navigate(`/categories/${cat.slug}`)}
                 bordered={false}
               >
-                <div className="card-icon">
-                  <FolderOpenOutlined />
+                <div className="card-icon" >
+                  {cat.icon_url ? (
+                    // Nếu CÓ icon_url: Hiển thị hình ảnh
+                    <img 
+                      src={getImageUrl(cat.icon_url)} 
+                      alt={`Icon của ${cat.name}`} 
+                      style={{ 
+                        width: '32px', 
+                        height: '32px', 
+                        marginRight: 12,
+                        objectFit: 'contain' // Đảm bảo ảnh không bị méo
+                      }} 
+                    />
+                  ) : (
+                    // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
+                    <FolderOpenOutlined />
+                  )}
                 </div>
+
                 <div className="card-title">
                   {cat.name}
                 </div>

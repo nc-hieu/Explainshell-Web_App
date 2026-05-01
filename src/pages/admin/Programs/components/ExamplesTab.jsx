@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { exampleService } from '../../../../services/example.service';
 import { optionService } from '../../../../services/option.service';
 import { optionGroupService } from '../../../../services/optionGroup.service';
+import RichTextEditor from '../../../../components/common/RichTextEditor';
 
 const ExamplesTab = ({ editingProgram }) => {
   const [examplesList, setExamplesList] = useState([]);
@@ -186,9 +187,9 @@ const ExamplesTab = ({ editingProgram }) => {
           {/* Radio Button để chọn Loại Ví Dụ */}
           <Form.Item name="target_type" label="Ví dụ này giải thích cho:" rules={[{ required: true }]}>
             <Radio.Group onChange={(e) => setTargetType(e.target.value)} buttonStyle="solid">
-              <Radio.Button value="program">Lệnh chung</Radio.Button>
-              <Radio.Button value="group">Nhóm cờ</Radio.Button>
-              <Radio.Button value="option">Cờ lệnh</Radio.Button>
+              <Radio.Button value="program">Base</Radio.Button>
+              <Radio.Button value="option">Cờ lệnh (Options)</Radio.Button>
+              <Radio.Button value="group">Nhóm cờ (Groups)</Radio.Button>
             </Radio.Group>
           </Form.Item>
 
@@ -216,12 +217,12 @@ const ExamplesTab = ({ editingProgram }) => {
             </Form.Item>
           )}
 
-          <Form.Item name="command_line" label="Câu lệnh ví dụ" rules={[{ required: true, message: 'Vui lòng nhập câu lệnh!' }]}>
-            <Input placeholder="VD: tar -xvf archive.tar" />
+          <Form.Item name="command_line" label="Câu Lệnh Hoặc Chủ Đề" rules={[{ required: true, message: 'Vui lòng nhập câu lệnh!' }]}>
+            <Input placeholder="VD: tar -xvf archive.tar -or- Chủ đề..." />
           </Form.Item>
           
-          <Form.Item name="explanation" label="Giải thích ý nghĩa" rules={[{ message: 'Vui lòng nhập giải thích!' }]}>
-            <Input.TextArea rows={3} placeholder="Mô tả lệnh/cờ này làm gì..." />
+          <Form.Item name="explanation" label="Giải Thích" rules={[{ message: 'Vui lòng nhập giải thích!' }]}>
+            <RichTextEditor />
           </Form.Item>
           
           <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>

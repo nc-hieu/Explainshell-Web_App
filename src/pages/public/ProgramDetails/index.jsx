@@ -50,6 +50,7 @@ const ProgramDetails = () => {
     }
   };
 
+  // Render Examples=========================
   const renderExamples = (examplesList, title = "Ví dụ:") => {
     if (!examplesList || examplesList.length === 0) return null;
     return (
@@ -60,16 +61,27 @@ const ProgramDetails = () => {
         <Space direction="vertical" style={{ width: '100%' }}>
           {examplesList.map(ex => (
             <div key={ex.id}>
+              <hr/>
               <Tag color="geekblue" className="example-cmd-tag">{ex.command_line}</Tag>
               <br />
-              <Text type="secondary">- {ex.explanation}</Text>
+              {ex.explanation && 
+              <div>
+                <div 
+                  className=" tiptap-content example-decs" 
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(ex.explanation) }} 
+                />
+              </div> 
+            }
+             
             </div>
           ))}
         </Space>
       </div>
     );
   };
+  // End Render Examples=========================
 
+  // Render Option=========================
   const renderOption = (opt, allExamples) => {
     const optionExamples = allExamples?.filter(e => e.option_id === opt.id) || [];
     return (
@@ -80,11 +92,22 @@ const ProgramDetails = () => {
           {opt.is_featured && <Tag color="gold">Nổi bật</Tag>}
           {opt.is_deprecated && <Tag color="red">Đã cũ</Tag>}
         </Space>
-        <Paragraph className="option-desc">{opt.description || 'Chưa có mô tả chi tiết.'}</Paragraph>
+          {opt.description ? (
+            <div 
+              className="option-desc tiptap-content" 
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(opt.description) }} 
+            />
+          ) : (
+            <Paragraph className="option-desc">
+              Chưa có mô tả cho lệnh này.
+            </Paragraph>
+          )}
         {renderExamples(optionExamples, "Ví dụ:")}
       </Card>
     );
   };
+  // Render Option=========================
+
 
   if (loading) return <div className="status-container"><Spin size="large" tip="Đang tải tài liệu lệnh..." /></div>;
 
@@ -129,7 +152,7 @@ const ProgramDetails = () => {
           </Space>
         )}
         
-        {/* ===================== */}
+        {/* ========Description======== */}
         {programData.description ? (
           <div 
             className="description-text tiptap-content" 
@@ -142,7 +165,7 @@ const ProgramDetails = () => {
         )}
         <hr></hr>
         <br></br>
-        {/* ===================== */}
+        {/* ========Description======== */}
 
         {renderExamples(generalExamples, "Ví Dụ")}
       </Card>
@@ -155,7 +178,10 @@ const ProgramDetails = () => {
             <div key={group.id} className="group-section">
               <Title level={4} className="group-title">{group.title}</Title>
               {group.description && group.description.trim() !== "" && (
-                <Paragraph type="secondary" className="group-desc">{group.description}</Paragraph>
+                <div 
+                  className="group-desc tiptap-content" 
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }} 
+                />
               )}
               {renderExamples(groupExamples, `Ví dụ cho nhóm ${group.title}:`)}
               <div className="group-options-wrapper">

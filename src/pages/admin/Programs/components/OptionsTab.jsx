@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, Popconfirm, Tag, message, Select, Switch, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { optionService } from '../../../../services/option.service';
-import { optionGroupService } from '../../../../services/optionGroup.service'; // Phải import thêm service này
+import { optionGroupService } from '../../../../services/optionGroup.service';
+import RichTextEditor from '../../../../components/common/RichTextEditor';
 
 const { Text } = Typography;
 
@@ -210,7 +211,7 @@ const OptionsTab = ({ editingProgram }) => {
           </Form.Item>
 
           <Form.Item name="description" label="Mô tả" rules={[{ required: true, message: 'Nhập mô tả!' }]}>
-            <Input.TextArea rows={3} placeholder="Giải thích ý nghĩa của cờ này..." />
+            <RichTextEditor />
           </Form.Item>
 
           <div style={{ display: 'flex', gap: '24px', padding: '12px', borderRadius: '8px', marginBottom: '24px' }}>

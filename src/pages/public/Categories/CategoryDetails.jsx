@@ -9,6 +9,8 @@ import {
   SearchOutlined
 } from '@ant-design/icons';
 import { categoryService } from '../../../services/category.service';
+import { getImageUrl } from '../../../utils/helpers';
+
 
 import './CategoryDetails.scss';
 
@@ -128,7 +130,21 @@ const CategoryDetails = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <Title level={2} style={{ margin: 0, color: 'var(--text-primary)' }}>
-            <FolderOpenOutlined style={{ marginRight: 12, color: 'var(--color-primary)' }} />
+            {categoryData.icon_url ? (
+              // Nếu CÓ icon_url: Hiển thị hình ảnh
+              <img 
+                src={getImageUrl(categoryData.icon_url)} 
+                alt={`Icon của ${categoryData.name}`} 
+                style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  marginRight: 12,
+                  objectFit: 'contain' // Đảm bảo ảnh không bị méo
+                }}
+              />) : (
+                // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
+              <FolderOpenOutlined style={{ marginRight: 12, color: 'var(--color-primary)' }} />
+            )}            
             {categoryData.name}
           </Title>
           {categoryData.description && (
@@ -167,7 +183,24 @@ const CategoryDetails = () => {
                   style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                    <FolderOpenOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} />
+                    {/* <FolderOpenOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} /> */}
+
+                    {sub.icon_url ? (
+                      // Nếu CÓ icon_url: Hiển thị hình ảnh
+                      <img 
+                        src={getImageUrl(sub.icon_url)} 
+                        alt={`Icon của ${sub.name}`} 
+                        style={{ 
+                          width: '30px', 
+                          height: '30px', 
+                          marginRight: 12,
+                          objectFit: 'contain' // Đảm bảo ảnh không bị méo
+                        }}
+                      />) : (
+                          // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
+                        <FolderOpenOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} />
+                      )}            
+
                     <Text strong style={{ fontSize: '1.2rem' }}>{sub.name}</Text>
                   </div>
 

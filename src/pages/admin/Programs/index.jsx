@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Drawer, Tabs, Popconfirm, message, Tag, Input } from 'antd'; // Import thêm Input
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { programService } from '../../../services/program.service';
+import DOMPurify from 'dompurify';
+
 
 // Import các Tab
 import GeneralTab from './components/GeneralTab';
@@ -124,7 +126,6 @@ const Programs = () => {
               </Space>
             )
           },
-          { title: 'Mô tả', dataIndex: 'description', key: 'description', ellipsis: true },
           { 
             title: 'Thời gian tạo', dataIndex: 'created_at', key: 'created_at',
             render: (date) => <span style={{ color: 'var(--text-secondary, #9ca3af)' }}>{formatDate(date)}</span>

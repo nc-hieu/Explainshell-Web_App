@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, TreeSelect } from 'antd';
+import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, TreeSelect, Upload } from 'antd'; // Thêm Upload
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { generateSlug } from '../../../utils/helpers';
+import { generateSlug, getImageUrl } from '../../../utils/helpers';
 import { categoryService } from '../../../services/category.service';
+import { uploadService } from '../../../services/upload.service';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]); 
@@ -13,6 +14,9 @@ const Categories = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [form] = Form.useForm();
 
+  // State quản lý danh sách file ảnh đang được chọn
+  const [fileList, setFileList] = useState([]);
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -20,6 +24,7 @@ const Categories = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
+      // Tạm gọi limit 100
       const data = await categoryService.getAll(0, 100);
       const treeData = buildTree(data);
       setCategories(treeData);
@@ -66,12 +71,26 @@ const Categories = () => {
   const handleAddNew = () => {
     setEditingCategory(null);
     form.resetFields();
+    setFileList([]); // Xóa sạch ảnh cũ khi bấm Thêm mới
     setIsModalVisible(true);
   };
 
   const handleEdit = (record) => {
     setEditingCategory(record);
     form.setFieldsValue(record); // Đổ dữ liệu cũ vào Form
+    const fullUrl = getImageUrl(record.icon_url);
+    // Nếu danh mục đang sửa có ảnh, hiển thị ảnh đó lên ô Upload
+    if (record.icon_url) {
+      setFileList([{
+        uid: '-1', // ID ảo để Ant Design quản lý
+        name: 'icon.png',
+        status: 'done',
+        url: fullUrl, // Hiển thị ảnh cũ từ Database
+      }]);
+    } else {
+      setFileList([]);
+    }
+
     setIsModalVisible(true);
   };
 
@@ -85,16 +104,57 @@ const Categories = () => {
     }
   };
 
-  const handleFormSubmit = async (values) => {
+  // Hàm chặn Ant Design tự động Upload (Để ta tự xử lý khi bấm nút "Lưu lại")
+  const beforeUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('Bạn chỉ có thể tải lên file hình ảnh!');
+      return Upload.LIST_IGNORE;
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Hình ảnh phải nhỏ hơn 2MB!');
+      return Upload.LIST_IGNORE;
+    }
+    return false; // Trả về false để ngăn không cho Antd tự gọi API
+  };
+
+//  Upload Icon===========================
+const handleFormSubmit = async (values) => {
     try {
-    // Nếu mảng values.slug trống, dùng hàm generateSlug để tạo lại từ name
-    const finalSlug = values.slug ? values.slug : generateSlug(values.name);
-    
-    const submitData = {
-      ...values,
-      slug: finalSlug, 
-      parent_id: values.parent_id || null, 
-    };
+      setLoading(true); // Tốt nhất nên bật loading lúc đang upload
+      
+      const finalSlug = values.slug ? values.slug : generateSlug(values.name);
+      let iconUrl = editingCategory ? editingCategory.icon_url : null;
+
+      // NẾU CÓ FILE ẢNH MỚI ĐƯỢC CHỌN (originFileObj tồn tại)
+      if (fileList.length > 0 && fileList[0].originFileObj) {
+        try {
+          const formData = new FormData();
+          formData.append('file', fileList[0].originFileObj);
+
+          // Gọi API Upload
+          const uploadRes = await uploadService.uploadImage(formData); 
+          
+          // Lấy URL do Backend trả về (Ví dụ: /uploads/abc123xyz.png)
+          iconUrl = uploadRes.url; 
+          
+        } catch (uploadError) {
+           message.error('Lỗi khi tải ảnh lên!');
+           setLoading(false);
+           return; // Dừng lại không lưu category nữa nếu upload lỗi
+        }
+      } else if (fileList.length === 0) {
+        // Nếu người dùng xóa ảnh
+        iconUrl = null;
+      }
+      
+      const submitData = {
+        ...values,
+        slug: finalSlug, 
+        parent_id: values.parent_id || null, 
+        icon_url: iconUrl 
+      };
 
       if (editingCategory) {
         await categoryService.update(editingCategory.id, submitData);
@@ -104,18 +164,39 @@ const Categories = () => {
         message.success('Thêm danh mục mới thành công!');
       }
       setIsModalVisible(false);
-      fetchCategories(); // Tải lại cây dữ liệu
+      fetchCategories(); 
     } catch (error) {
       message.error('Có lỗi xảy ra khi lưu dữ liệu!');
+    } finally {
+      setLoading(false);
     }
   };
+//  End Upload Icone======================
 
   const columns = [
+    {
+      title: 'Icon',
+      dataIndex: 'icon_url',
+      key: 'icon_url',
+      width: '10%',
+      render: (url) => {
+        // Sử dụng hàm helper để lấy đường dẫn chuẩn
+        const fullUrl = getImageUrl(url);
+        
+        return fullUrl ? (
+          <img 
+            src={fullUrl} 
+            alt="icon" 
+            style={{ width: 30, height: 30, objectFit: 'contain' }} 
+          />
+        ) : '-';
+      },
+    },
     {
       title: 'Tên danh mục',
       dataIndex: 'name',
       key: 'name',
-      width: '35%',
+      width: '25%',
       render: (text) => <strong>{text}</strong>,
     },
     {
@@ -181,6 +262,25 @@ const Categories = () => {
           layout="vertical"
           onFinish={handleFormSubmit}
         >
+          {/* KHU VỰC TẢI ẢNH (MỚI) */}
+          <Form.Item label="Icon Danh mục (Hiển thị ngoài trang chủ)">
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={({ fileList: newFileList }) => setFileList(newFileList)}
+              beforeUpload={beforeUpload}
+              maxCount={1}
+              accept="image/*"
+            >
+              {fileList.length >= 1 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Tải ảnh</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
+
           <Form.Item
             name="name"
             label="Tên Danh Mục"
