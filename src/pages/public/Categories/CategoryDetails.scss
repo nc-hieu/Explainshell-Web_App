@@ -19,6 +19,13 @@
     gap: 8px;
   }
 
+  .desc-header
+  {
+    font-size: 1rem;
+    margin-top: 10px;
+    text-align: left ;
+  }
+
   /* Thẻ danh mục con */
   .subcategory-card {
     border-radius: 8px;
@@ -26,6 +33,31 @@
     background-color: var(--bg-card);
     cursor: pointer;
     transition: all 0.2s ease;
+
+    // img{
+    //   width: 30px;
+    //   height: 30px;
+    //   margin-right: 12px;
+    //   // border-radius: 50%;
+    //   object-fit: contain;
+    // }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+      display: -webkit-box;
+      // -webkit-line-clamp: 5; /* Chỉ hiện tối đa 2 dòng mô tả */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
     
     &:hover {
       border-color: var(--color-primary);

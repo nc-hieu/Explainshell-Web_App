@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { Typography, Breadcrumb, Input, Spin, Row, Col, Card, Empty, Space, Tag } from 'antd';
+import { Typography, Breadcrumb, Input, Spin, Row, Col, Card, Empty, Space, Tag, Button } from 'antd';
 import { 
   HomeOutlined, 
   AppstoreOutlined, 
   FolderOpenOutlined, 
   CodeOutlined,
-  SearchOutlined
+  SearchOutlined,
+  EyeOutlined,         
+  EyeInvisibleOutlined 
 } from '@ant-design/icons';
 import { categoryService } from '../../../services/category.service';
 import { getImageUrl } from '../../../utils/helpers';
+import DOMPurify from 'dompurify';
 
-
+// Import cả 2 file CSS (để dùng chung style thẻ Card to cho Linux)
 import './CategoryDetails.scss';
+import './Categories.scss'; 
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -20,6 +24,9 @@ const CategoryDetails = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   
+  // KIỂM TRA: Xem danh mục hiện tại có phải là "linux" không
+  const isLinuxCategory = slug === 'linux';
+
   // Lấy state từ React Router (Nơi chứa lịch sử đường dẫn danh mục cha)
   const location = useLocation();
   const breadcrumbTrail = location.state?.breadcrumbTrail || [];
@@ -28,11 +35,15 @@ const CategoryDetails = () => {
   const [categoryData, setCategoryData] = useState(null);
   const [searchProgramText, setSearchProgramText] = useState('');
 
+  // MỚI: State quản lý việc ẩn/hiện danh sách câu lệnh (mặc định là false -> Ẩn)
+  const [showPrograms, setShowPrograms] = useState(false);
+
   // Gọi API mỗi khi slug trên URL thay đổi
   useEffect(() => {
     if (slug) {
       fetchCategoryDetails(slug);
       setSearchProgramText(''); // Xóa text tìm kiếm khi chuyển trang
+      setShowPrograms(false); // Reset lại trạng thái ẩn lệnh khi chuyển sang danh mục khác
     }
   }, [slug]);
 
@@ -113,7 +124,8 @@ const CategoryDetails = () => {
   const subcategories = categoryData.subcategories || [];
 
   return (
-    <div className="category-details-page">
+    {/* Thêm class categories-page ĐỘNG nếu là Linux để nó nhận diện được SCSS của trang Categories tổng */},
+    <div className={`category-details-page ${isLinuxCategory ? 'categories-page' : ''}`}>
       
       {/* 1. THANH ĐIỀU HƯỚNG (BREADCRUMB) LŨY TIẾN */}
       <Breadcrumb className="page-header" items={[
@@ -129,29 +141,26 @@ const CategoryDetails = () => {
       {/* 2. HEADER CỦA DANH MỤC */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <Title level={2} style={{ margin: 0, color: 'var(--text-primary)' }}>
+          <Title level={2} 
+            style={{ 
+              margin: 0, color: 'var(--text-primary)',
+              display: 'flex',          // Kích hoạt Flexbox
+              alignItems: 'center',
+              gap: '12px'
+            }}>
             {categoryData.icon_url ? (
               // Nếu CÓ icon_url: Hiển thị hình ảnh
               <img 
                 src={getImageUrl(categoryData.icon_url)} 
                 alt={`Icon của ${categoryData.name}`} 
-                style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  marginRight: 12,
-                  objectFit: 'contain' // Đảm bảo ảnh không bị méo
-                }}
+                style={{ width: '36px', height: '36px', objectFit: 'contain' }}
               />) : (
                 // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
-              <FolderOpenOutlined style={{ marginRight: 12, color: 'var(--color-primary)' }} />
+              <FolderOpenOutlined style={{ color: 'var(--color-primary)' }} />
             )}            
             {categoryData.name}
           </Title>
-          {categoryData.description && (
-            <Paragraph type="secondary" style={{ fontSize: '1.1rem', marginTop: 8 }}>
-              {categoryData.description}
-            </Paragraph>
-          )}
+          
         </div>
 
         {/* Ô TÌM KIẾM LỆNH TRONG DANH MỤC NÀY */}
@@ -166,65 +175,110 @@ const CategoryDetails = () => {
         />
       </div>
 
-      {/* 3. HIỂN THỊ DANH MỤC CON VỚI THỐNG KÊ (STATS) */}
+      {/* Description */}
+      <div>
+        {categoryData.description && (
+          <Paragraph className="desc-header" type="secondary" style={{ marginTop: 12, fontSize: '1.1rem' }}>
+            {categoryData.description}
+          </Paragraph>
+        )}
+      </div>
+
+      {/* 3. HIỂN THỊ DANH MỤC CON */}
       {subcategories.length > 0 && (
         <div style={{ marginTop: 24 }}>
           <Title level={4} className="section-title">
             <FolderOpenOutlined /> Danh mục con
           </Title>
-          <Row gutter={[16, 16]}>
+          {/* Thay đổi khoảng cách cột (gutter) tùy thuộc vào giao diện nào đang hiển thị */}
+          <Row gutter={isLinuxCategory ? [24, 24] : [16, 16]}>
             {subcategories.map(sub => (
+              // <Col xs={24} sm={12} md={isLinuxCategory ? 8 : 12} key={sub.id}>
               <Col xs={24} sm={12} md={8} key={sub.id}>
-                <Card 
-                  className="subcategory-card" 
-                  size="small"
-                  onClick={() => handleSubcategoryClick(sub)}
-                  bordered={false}
-                  style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                    {/* <FolderOpenOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} /> */}
+                
+                {/* LOGIC HIỂN THỊ: NẾU LÀ LINUX -> HIỆN CARD BỰ (Categories) */}
+                {isLinuxCategory ? (
+                  <Card 
+                    className="category-card" 
+                    onClick={() => handleSubcategoryClick(sub)}
+                    bordered={false}
+                  >
+                    <div>
+                      {sub.icon_url ? (
+                        <img 
+                          src={getImageUrl(sub.icon_url)} 
+                          alt={`Icon của ${sub.name}`} 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain' }} 
+                        />
+                      ) : (
+                        <FolderOpenOutlined className="card-icon" style={{ fontSize: '32px', color: 'var(--color-primary)' }} />
+                      )}
+                    </div>
 
-                    {sub.icon_url ? (
-                      // Nếu CÓ icon_url: Hiển thị hình ảnh
-                      <img 
-                        src={getImageUrl(sub.icon_url)} 
-                        alt={`Icon của ${sub.name}`} 
-                        style={{ 
-                          width: '30px', 
-                          height: '30px', 
-                          marginRight: 12,
-                          objectFit: 'contain' // Đảm bảo ảnh không bị méo
-                        }}
-                      />) : (
-                          // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
+                    <div className="card-title" style={{ marginTop: '16px' }}>{sub.name}</div>
+                    <div className="card-desc">{sub.description || 'Chưa có mô tả cho danh mục này.'}</div>
+                    
+                    {sub.stats && (
+                      <Space wrap>
+                        {sub.stats.subcategories_count > 0 && (
+                          <Tag color="cyan">
+                            <FolderOpenOutlined style={{ marginRight: 4 }} /> {sub.stats.subcategories_count} danh mục
+                          </Tag>
+                        )}
+                        {sub.stats.programs_count > 0 && (
+                          <Tag color="geekblue">
+                            <CodeOutlined style={{ marginRight: 4 }} /> {sub.stats.programs_count} lệnh
+                          </Tag>
+                        )}
+                        {sub.stats.subcategories_count === 0 && sub.stats.programs_count === 0 && (
+                          <Tag color="default">Chưa có dữ liệu</Tag>
+                        )}
+                      </Space>
+                    )}
+                  </Card>
+                ) : (
+                  
+                  /* LOGIC HIỂN THỊ: NẾU KHÔNG PHẢI LINUX -> HIỆN CARD NHỎ, NẰM NGANG (Mặc định) */
+                  <Card 
+                    className="subcategory-card" 
+                    size="small"
+                    onClick={() => handleSubcategoryClick(sub)}
+                    bordered={false}
+                    style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                      {sub.icon_url ? (
+                        <img 
+                          src={getImageUrl(sub.icon_url)} 
+                          alt={`Icon của ${sub.name}`} 
+                          style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                        />
+                      ) : (
                         <FolderOpenOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} />
-                      )}            
+                      )}           
+                      <Text strong style={{ fontSize: '1rem' }}>{sub.name}</Text>
+                    </div>
+                          
+                    {sub.stats && (
+                      <Space wrap>
+                        {sub.stats.subcategories_count > 0 && (
+                          <Tag color="cyan">
+                            <FolderOpenOutlined style={{ marginRight: 4 }} /> {sub.stats.subcategories_count} danh mục
+                          </Tag>
+                        )}
+                        {sub.stats.programs_count > 0 && (
+                          <Tag color="geekblue">
+                            <CodeOutlined style={{ marginRight: 4 }} /> {sub.stats.programs_count} lệnh
+                          </Tag>
+                        )}
+                        {sub.stats.subcategories_count === 0 && sub.stats.programs_count === 0 && (
+                          <Tag color="default">Chưa có dữ liệu</Tag>
+                        )}
+                      </Space>
+                    )}
+                  </Card>
+                )}
 
-                    <Text strong style={{ fontSize: '1.2rem' }}>{sub.name}</Text>
-                  </div>
-
-                  {/* Hiển thị số lượng tương tự trang 1 */}
-                  {sub.stats && (
-                    <Space wrap>
-                      {sub.stats.subcategories_count > 0 && (
-                        <Tag color="cyan">
-                          <FolderOpenOutlined style={{ marginRight: 4 }} />
-                          {sub.stats.subcategories_count} danh mục
-                        </Tag>
-                      )}
-                      {sub.stats.programs_count > 0 && (
-                        <Tag color="geekblue">
-                          <CodeOutlined style={{ marginRight: 4 }} />
-                          {sub.stats.programs_count} câu lệnh
-                        </Tag>
-                      )}
-                      {sub.stats.subcategories_count === 0 && sub.stats.programs_count === 0 && (
-                        <Tag color="default">Chưa có dữ liệu</Tag>
-                      )}
-                    </Space>
-                  )}
-                </Card>
               </Col>
             ))}
           </Row>
@@ -233,36 +287,84 @@ const CategoryDetails = () => {
 
       {/* 4. HIỂN THỊ DANH SÁCH LỆNH (PROGRAMS) */}
       <div style={{ marginTop: 32 }}>
-        <Title level={4} className="section-title">
-          <CodeOutlined /> Danh sách câu lệnh
-        </Title>
         
-        {programs.length === 0 ? (
-          <Empty description="Danh mục này chưa có câu lệnh nào" />
-        ) : filteredPrograms.length > 0 ? (
+        {/* NÚT ĐIỀU KHIỂN ẨN/HIỆN LỆNH */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          borderBottom: '1px solid var(--border-color)', 
+          paddingBottom: '12px', 
+          marginBottom: '16px' 
+        }}>
+          <Title level={4} style={{ margin: 0 }}>
+            <CodeOutlined /> Danh sách câu lệnh
+          </Title>
+
+          {/* Chỉ hiện nút bấm nếu danh mục này thực sự có chứa câu lệnh */}
+          {programs.length > 0 && (
+            <Button 
+              type="dashed" 
+              icon={showPrograms ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              onClick={() => setShowPrograms(!showPrograms)}
+              style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
+            >
+              {showPrograms ? 'Ẩn danh sách' : `Hiển thị ${programs.length} câu lệnh`}
+            </Button>
+          )}
+        </div>
+        
+        {/* RENDER CÓ ĐIỀU KIỆN (Chỉ hiện khi showPrograms là true) */}
+        {showPrograms ? (
           <div>
-            {filteredPrograms.map(prog => (
-              <div key={prog.id} className="program-list-item">
-                <div className="program-icon">
-                  <CodeOutlined />
-                </div>
-                <div>
-                  <div 
-                    className="program-title"
-                    onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}
-                  >
-                    {prog.name}
+            {programs.length === 0 ? (
+              <Empty description="Danh mục này chưa có câu lệnh nào" />
+            ) : filteredPrograms.length > 0 ? (
+              <div>
+                {filteredPrograms.map(prog => (
+                  <div key={prog.id} className="program-list-item">
+                    <div className="program-icon">
+                      <CodeOutlined />
+                    </div>
+                    <div>
+                      <div 
+                        className="program-title"
+                        onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}
+                      >
+                        {prog.name}
+                      </div>
+                      {prog.description ? (
+                        <div
+                          className="tiptap-content program-desc" 
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(prog.description) }} 
+                          style={{ 
+                            display: '-webkit-box', 
+                            WebkitLineClamp: 2, 
+                            WebkitBoxOrient: 'vertical', 
+                            textAlign: 'left',
+                            overflow: 'hidden' 
+                          }}
+                        />
+                      ) : (
+                        <Paragraph className="program-desc">
+                          Chưa có mô tả cho lệnh này.
+                        </Paragraph>
+                      )}
+                    </div>
                   </div>
-                  <div className="program-desc">
-                    {prog.description || 'Chưa có mô tả chi tiết.'}
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <Empty description="Không tìm thấy câu lệnh nào khớp với từ khóa" />
+            )}
           </div>
         ) : (
-          <Empty description="Không tìm thấy câu lệnh nào khớp với từ khóa" />
+          // THÔNG BÁO KHI ĐANG ẨN (NẾU KHÔNG CÓ LỆNH THÌ HIỆN EMPTY)
+          programs.length === 0 && (
+             <Empty description="Danh mục này chưa có câu lệnh nào" />
+          )
         )}
+
       </div>
 
     </div>

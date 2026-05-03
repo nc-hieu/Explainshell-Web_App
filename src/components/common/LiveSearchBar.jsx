@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { AutoComplete, Input, Typography } from 'antd';
 import { SearchOutlined, ClockCircleOutlined, CodeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
+import './RichTextEditor.scss';
+
 
 // Chú ý: Cập nhật lại đường dẫn import cho đúng với thư mục hiện tại của bạn
 import { useDebounce } from '../../hooks/useDebounce';
@@ -76,7 +79,9 @@ const LiveSearchBar = ({ size = 'middle', style, className, initialValue = '' })
             <CodeOutlined style={{ marginRight: 8, color: 'var(--color-primary)' }} />
             <strong>{program.name}</strong> 
             <span style={{ marginLeft: 8, color: 'gray', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              - {program.description || 'Không có mô tả'}
+              {<div 
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(program.description) }} 
+              /> || 'Không có mô tả'}
             </span>
           </div>
         ),

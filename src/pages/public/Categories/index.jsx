@@ -76,7 +76,7 @@ const Categories = () => {
         
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <Input.Search
-            placeholder="Tìm kiếm danh mục (VD: network, docker...)"
+            placeholder="Tìm kiếm danh mục (VD: linux, docker...)"
             allowClear
             size="large"
             enterButton={<SearchOutlined />}
@@ -102,22 +102,22 @@ const Categories = () => {
                 onClick={() => navigate(`/categories/${cat.slug}`)}
                 bordered={false}
               >
-                <div className="card-icon" >
+                <div >
                   {cat.icon_url ? (
                     // Nếu CÓ icon_url: Hiển thị hình ảnh
                     <img 
                       src={getImageUrl(cat.icon_url)} 
                       alt={`Icon của ${cat.name}`} 
                       style={{ 
-                        width: '32px', 
-                        height: '32px', 
-                        marginRight: 12,
+                        width: '50px', 
+                        height: '50px', 
+                        borderRadius: '50%',
                         objectFit: 'contain' // Đảm bảo ảnh không bị méo
                       }} 
                     />
                   ) : (
                     // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
-                    <FolderOpenOutlined />
+                    <FolderOpenOutlined className="card-icon" />
                   )}
                 </div>
 

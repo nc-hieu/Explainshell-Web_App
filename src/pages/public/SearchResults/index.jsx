@@ -4,6 +4,8 @@ import { List, Card, Spin, Typography, Button, Space } from 'antd';
 import { ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import { programService } from '../../../services/program.service';
 import LiveSearchBar from '../../../components/common/LiveSearchBar';
+import DOMPurify from 'dompurify';
+
 
 
 const { Title, Text, Paragraph } = Typography;
@@ -66,21 +68,30 @@ const SearchResults = () => {
           renderItem={(item) => (
             <List.Item key={item.id}>
 
-              <Space vertical size="large" style={{ width: '100%', textAlign: 'left', borderRadius: '8px', borderLeft: '6px solid #fbbf24'}}>
+              <Space vertical size="large" style={{ width: '100%', textAlign: 'left', borderRadius: '8px', borderLeft: '6px solid var(--color-primary)'}}>
               <Card 
               hoverable 
               onClick={() => navigate(`/programs/${item.slug}`)}
               title={
-                <Title level={4} style={{color: '#fbbf24'}}>
+                <Title level={4} style={{ color: 'var(--color-primary)' }}>
                   {item.name}
                 </Title>
               }
               extra={
                 <Button type="primary" size="middle" icon={<SearchOutlined />}></Button>
               }>
-                <Paragraph type="secondary">
-                  {item.description || 'Chưa có mô tả cho lệnh này.'}
-                </Paragraph>
+                
+                {item.description ? (
+                  <div 
+                    className="tiptap-content" 
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.description) }} 
+                  />
+                ) : (
+                  <Paragraph type="secondary">
+                    Chưa có mô tả cho lệnh này.
+                  </Paragraph>
+                )}
+
               </Card>
             </Space>
             </List.Item>

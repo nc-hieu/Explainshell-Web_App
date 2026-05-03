@@ -3,13 +3,14 @@ import { Form, Button, TreeSelect, message } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { categoryService } from '../../../../services/category.service';
 import { programService } from '../../../../services/program.service'; 
+import { getImageUrl } from '../../../../utils/helpers'; 
 
-const CategoriesTab = ({ editingProgram }) => {
+// Nhận thêm prop filterCategoryId
+const CategoriesTab = ({ editingProgram, setEditingProgram, fetchPrograms, filterCategoryId }) => {
   const [formCategories] = Form.useForm();
   const [categoriesTree, setCategoriesTree] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // State mới để phục vụ logic tự chọn cấp cha
   const [parentMap, setParentMap] = useState({});
   const [itemMapData, setItemMapData] = useState({});
 
@@ -17,20 +18,56 @@ const CategoriesTab = ({ editingProgram }) => {
     fetchCategories();
   }, []);
 
+  // LOGIC ĐIỀN DỮ LIỆU TỰ ĐỘNG
   useEffect(() => {
+    // Chỉ chạy logic khi dữ liệu cây danh mục đã được tải xong (itemMapData có dữ liệu)
+    if (Object.keys(itemMapData).length === 0) return;
+
     if (editingProgram) {
+      // Trường hợp 1: Lệnh đã có sẵn danh mục (sửa lệnh cũ)
       if (editingProgram.categories && editingProgram.categories.length > 0) {
-        // Do bật treeCheckStrictly, Antd yêu cầu value phải là mảng object: [{ value: 1, label: 'Name' }]
-        const defaultCategories = editingProgram.categories.map(c => ({
-          value: c.id,
-          label: c.name // Đảm bảo object category từ API có trường name
-        }));
+        const defaultCategories = editingProgram.categories.map(c => {
+          const labelContent = (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {c.icon_url && (
+                <img 
+                  src={getImageUrl(c.icon_url)} 
+                  alt="icon" 
+                  style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
+                />
+              )}
+              <span>{c.name}</span>
+            </div>
+          );
+          return { value: c.id, label: labelContent };
+        });
         formCategories.setFieldsValue({ category_ids: defaultCategories });
-      } else {
+      } 
+      // Trường hợp 2: Lệnh MỚI (chưa có danh mục nào) VÀ người dùng đang bật bộ lọc ngoài bảng
+      else if (filterCategoryId) {
+        const selectedSet = new Set();
+        let currentId = filterCategoryId;
+        
+        // Vòng lặp truy ngược: Lấy ID hiện tại, tìm Cha của nó, tiếp tục tìm Cha của Cha...
+        while (currentId) {
+          selectedSet.add(currentId);
+          currentId = parentMap[currentId];
+        }
+
+        // Chuyển đổi Set ID thành định dạng mà Ant Design TreeSelect yêu cầu
+        const autoFilledCategories = Array.from(selectedSet).map(id => ({
+          value: id,
+          label: itemMapData[id]?.title || ''
+        }));
+
+        formCategories.setFieldsValue({ category_ids: autoFilledCategories });
+      } 
+      // Trường hợp 3: Lệnh mới, không có bộ lọc nào được chọn
+      else {
         formCategories.setFieldsValue({ category_ids: [] });
       }
     }
-  }, [editingProgram, formCategories]);
+  }, [editingProgram, formCategories, filterCategoryId, itemMapData, parentMap]);
 
   const fetchCategories = async () => {
     try {
@@ -38,12 +75,25 @@ const CategoriesTab = ({ editingProgram }) => {
       const items = Array.isArray(data) ? data : data.items || [];
       const itemMap = {}; 
       const tree = [];
-      const pMap = {}; // Khởi tạo map lưu trữ quan hệ Con -> Cha
+      const pMap = {}; 
       
       items.forEach(i => { 
-        itemMap[i.id] = { ...i, key: i.id, value: i.id, title: i.name, children: [] }; 
+        const titleContent = (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {i.icon_url && (
+              <img 
+                src={getImageUrl(i.icon_url)} 
+                alt="icon" 
+                style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
+              />
+            )}
+            <span>{i.name}</span>
+          </div>
+        );
+
+        itemMap[i.id] = { ...i, key: i.id, value: i.id, title: titleContent, children: [] }; 
         if (i.parent_id) {
-            pMap[i.id] = i.parent_id; // Ghi nhận Cha của ID này
+            pMap[i.id] = i.parent_id; 
         }
       });
       
@@ -56,8 +106,8 @@ const CategoriesTab = ({ editingProgram }) => {
       });
 
       setCategoriesTree(tree);
-      setParentMap(pMap); // Lưu vào state
-      setItemMapData(itemMap); // Lưu vào state để lấy label hiển thị khi tự động check
+      setParentMap(pMap); 
+      setItemMapData(itemMap); 
     } catch (e) {
       console.error('Lỗi tải danh mục:', e);
       message.error('Không thể tải danh sách danh mục!');
@@ -72,12 +122,18 @@ const CategoriesTab = ({ editingProgram }) => {
 
     setLoading(true);
     try {
-      // Do dùng treeCheckStrictly, values.category_ids giờ là mảng Object. 
-      // Ta cần bóc tách để lấy mảng ID thuần túy gửi xuống Backend.
       const rawCategoryIds = values.category_ids || [];
       const categoryIds = rawCategoryIds.map(item => typeof item === 'object' ? item.value : item);
 
-      await programService.assignCategories(editingProgram.id, categoryIds);
+      const updatedProgram = await programService.assignCategories(editingProgram.id, categoryIds);
+      
+      if (setEditingProgram) {
+        setEditingProgram(updatedProgram || { ...editingProgram, categories: rawCategoryIds.map(c => ({ id: c.value || c, name: c.label || '' })) });
+      }
+
+      if (fetchPrograms) {
+        fetchPrograms();
+      }
       message.success('Đã cập nhật danh mục cho lệnh thành công!');
     } catch (error) {
       console.error("Lỗi khi lưu danh mục:", error);
@@ -96,28 +152,20 @@ const CategoriesTab = ({ editingProgram }) => {
       <Form.Item 
         name="category_ids" 
         label="Chọn Danh mục cho lệnh này"
-        // Sử dụng getValueFromEvent để can thiệp vào logic khi người dùng check/uncheck
         getValueFromEvent={(value, labelList, extra) => {
           if (!value) return [];
-          
-          // Tạo một Set chứa các ID hiện đang được chọn
           const selectedSet = new Set(value.map(item => item.value));
 
-          // Nếu hành động là "Check" (chọn thêm) một danh mục
           if (extra.checked && extra.triggerValue) {
             let currentId = extra.triggerValue;
-            
-            // Chạy vòng lặp duyệt ngược lên để tự động thêm các cấp Cha, Ông...
             while (currentId) {
               const parentId = parentMap[currentId];
               if (parentId) {
                 selectedSet.add(parentId);
               }
-              currentId = parentId; // Tiếp tục gán để tìm lên cấp cao hơn
+              currentId = parentId; 
             }
           }
-
-          // Trả về format [{ value, label }] để TreeSelect hiển thị đúng thẻ Tag
           return Array.from(selectedSet).map(id => ({
             value: id,
             label: itemMapData[id]?.title || ''
@@ -127,11 +175,12 @@ const CategoriesTab = ({ editingProgram }) => {
         <TreeSelect 
           treeData={categoriesTree} 
           treeCheckable={true} 
-          treeCheckStrictly={true} // BẬT CÁI NÀY: Ngắt liên kết chọn Cha tự chọn Con
+          treeCheckStrictly={true} 
           showCheckedStrategy={TreeSelect.SHOW_ALL} 
           placeholder="Vui lòng chọn danh mục (có thể chọn nhiều)..."
           style={{ width: '100%' }} 
           allowClear
+          dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
         />
       </Form.Item>
       

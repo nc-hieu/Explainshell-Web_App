@@ -122,7 +122,7 @@ const OptionsTab = ({ editingProgram }) => {
       render: (_, r) => (
         <Space direction="vertical" size={0}>
           <Space>
-            {r.short_name && <Tag color="blue">{r.short_name}</Tag>}
+            {r.short_name && <Tag color="magenta">{r.short_name}</Tag>}
             {r.long_name && <Tag color="cyan">{r.long_name}</Tag>}
           </Space>
         </Space>
@@ -140,7 +140,10 @@ const OptionsTab = ({ editingProgram }) => {
     },
     { 
       title: 'Mô tả', 
-      dataIndex: 'description' 
+      // dataIndex: 'description' 
+      render: (description) => {
+        return description ? (<Tag color="green">Có Nội Dung</Tag>) : (<Tag color="red">Không</Tag>)
+      }
     },
     {
       title: 'Trạng thái',

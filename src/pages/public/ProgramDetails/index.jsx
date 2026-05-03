@@ -51,14 +51,14 @@ const ProgramDetails = () => {
   };
 
   // Render Examples=========================
-  const renderExamples = (examplesList, title = "Ví dụ:") => {
+  const renderExamples = (examplesList, title = "Ví Dụ") => {
     if (!examplesList || examplesList.length === 0) return null;
     return (
       <div className="example-box">
         <Text strong className="example-title">
           <CodeOutlined /> {title}
         </Text>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="medium" style={{ width: '100%' }}>
           {examplesList.map(ex => (
             <div key={ex.id}>
               <hr/>
@@ -87,7 +87,7 @@ const ProgramDetails = () => {
     return (
       <Card key={opt.id} size="small" className="option-card">
         <Space className="option-tags-wrapper" wrap>
-          {opt.short_name && <Tag color="blue" className="option-tag">{opt.short_name}</Tag>}
+          {opt.short_name && <Tag color="magenta" className="option-tag">{opt.short_name}</Tag>}
           {opt.long_name && <Tag color="cyan" className="option-tag">{opt.long_name}</Tag>}
           {opt.is_featured && <Tag color="gold">Nổi bật</Tag>}
           {opt.is_deprecated && <Tag color="red">Đã cũ</Tag>}
@@ -102,7 +102,7 @@ const ProgramDetails = () => {
               Chưa có mô tả cho lệnh này.
             </Paragraph>
           )}
-        {renderExamples(optionExamples, "Ví dụ:")}
+        {renderExamples(optionExamples, "Ví Dụ")}
       </Card>
     );
   };
@@ -137,7 +137,7 @@ const ProgramDetails = () => {
         title={
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Space>
-              <BookOutlined style={{ color: '#fbbf24', fontSize: '28px' }} />
+              <BookOutlined style={{ color: 'var(--color-primary)' , fontSize: '28px' }} />
               <Title level={2} className="program-title" style={{ margin: 0 }}>{programData.name}</Title>
             </Space>
             
@@ -170,31 +170,10 @@ const ProgramDetails = () => {
         {renderExamples(generalExamples, "Ví Dụ")}
       </Card>
 
-      {/* 2. HIỂN THỊ THEO TỪNG NHÓM (OPTION GROUPS) */}
-      {programData.option_groups?.map(group => {
-          const groupOptions = programData.options?.filter(o => o.group_id === group.id) || [];
-          const groupExamples = allExamples.filter(e => e.group_id === group.id && !e.option_id);
-          return (
-            <div key={group.id} className="group-section">
-              <Title level={4} className="group-title">{group.title}</Title>
-              {group.description && group.description.trim() !== "" && (
-                <div 
-                  className="group-desc tiptap-content" 
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }} 
-                />
-              )}
-              {renderExamples(groupExamples, `Ví dụ cho nhóm ${group.title}:`)}
-              <div className="group-options-wrapper">
-                {groupOptions.length > 0 ? groupOptions.map(opt => renderOption(opt, allExamples)) : <Text type="secondary" italic>Nhóm này chưa có options nào.</Text>}
-              </div>
-            </div>
-          );
-        })}
-
-      {/* 3. HIỂN THỊ CÁC CỜ KHÔNG THUỘC NHÓM NÀO */}
+      {/* 2. HIỂN THỊ CÁC CỜ KHÔNG THUỘC NHÓM NÀO */}
       {ungroupedOptions.length > 0 && (
         <div className="group-section">
-          <Title level={4} className="group-title">Các Options khác</Title>
+          <Title level={3} className="group-title">Options</Title>
           <div className="group-options-wrapper">
             {ungroupedOptions.map(opt => renderOption(opt, allExamples))}
           </div>
@@ -204,6 +183,29 @@ const ProgramDetails = () => {
       {(!programData.options || programData.options.length === 0) && (
         <Empty description="Lệnh này chưa được cập nhật các cờ lệnh." />
       )}
+
+      {/* 3. HIỂN THỊ THEO TỪNG NHÓM (OPTION GROUPS) */}
+      {programData.option_groups?.map(group => {
+          const groupOptions = programData.options?.filter(o => o.group_id === group.id) || [];
+          const groupExamples = allExamples.filter(e => e.group_id === group.id && !e.option_id);
+          return (
+            <div key={group.id} className="group-section">
+              <Title level={3} className="group-title">{group.title}</Title>
+              {group.description && group.description.trim() !== "" && (
+                <div 
+                  className="group-desc tiptap-content" 
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }} 
+                />
+              )}
+              {renderExamples(groupExamples, `Ví Dụ`)}
+              <div className="group-options-wrapper">
+                {groupOptions.length > 0 ? groupOptions.map(opt => renderOption(opt, allExamples)) : <Text type="secondary" italic>Nhóm này chưa có options nào.</Text>}
+              </div>
+            </div>
+          );
+        })}
+
+      
     </div>
   );
 };

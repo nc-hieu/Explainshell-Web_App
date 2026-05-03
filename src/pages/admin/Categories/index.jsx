@@ -187,7 +187,12 @@ const handleFormSubmit = async (values) => {
           <img 
             src={fullUrl} 
             alt="icon" 
-            style={{ width: 30, height: 30, objectFit: 'contain' }} 
+            style={{ 
+              width: 30, 
+              height: 30,
+              //  borderRadius: '50%', 
+               objectFit: 'contain' 
+              }} 
           />
         ) : '-';
       },

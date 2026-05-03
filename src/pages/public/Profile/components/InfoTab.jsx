@@ -14,7 +14,7 @@ const InfoTab = ({ user }) => {
       <Descriptions.Item label="Tên người dùng"><strong>{user.username}</strong></Descriptions.Item>
       <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
       <Descriptions.Item label="Ngày tham gia">{formatDate(user.created_at)}</Descriptions.Item>
-      <Descriptions.Item label="ID Tài khoản">#{user.id}</Descriptions.Item>
+      <Descriptions.Item label="ID Tài khoản">#None</Descriptions.Item>
     </Descriptions>
   );
 };

@@ -9,7 +9,7 @@ import './styles/variables.scss';
 
 const App = () => {
   // State quản lý Theme. Mặc định cho là Dark Mode (true), bạn có thể đổi thành false để mặc định Light Mode
-  const [isDarkMode, setIsDarkMode] = useState(true); 
+  const [isDarkMode, setIsDarkMode] = useState(false); 
 
   // Mỗi khi state isDarkMode thay đổi, tự động gắn thuộc tính data-theme vào thẻ <html>
   useEffect(() => {
@@ -33,7 +33,7 @@ const App = () => {
         // 2. Ghi đè màu sắc cốt lõi (Màu Vàng Cam chủ đạo)
         token: {
           // colorPrimary: '#fbbf24', 
-          colorPrimary: isDarkMode ? '#fbbf24' : '#ffb700', 
+          colorPrimary: isDarkMode ? '#fbbf24' : '#0d9488', 
           // colorPrimary: isDarkMode ? '#161a24' : '#f3f4f6', 
           fontFamily: "'Inter', system-ui, sans-serif",
           borderRadius: 8, // Bo góc nhè nhẹ cho nút bấm và ô input
@@ -51,7 +51,7 @@ const App = () => {
             colorBgContainer: isDarkMode ? '#1c1e26' : '#ffffff',
           },
           Button: {
-          colorTextLightSolid: isDarkMode ? '#ffffff' : '#000000',
+          colorTextLightSolid: isDarkMode ? '#ffffff' : '#ffffff',
 
           
         },
