@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, Card, Spin, Space, Tag, Button, Empty } from 'antd';
+import { Typography, Card, Spin, Space, Tag, Button, Empty, Divider } from 'antd';
 import { ArrowLeftOutlined, BookOutlined, CodeOutlined } from '@ant-design/icons';
 import { programService } from '../../../services/program.service';
 import { historyService } from '../../../services/history.service';
@@ -61,7 +61,10 @@ const ProgramDetails = () => {
         <Space orientation="vertical" size="medium" style={{ width: '100%' }}>
           {examplesList.map(ex => (
             <div key={ex.id}>
-              <hr/>
+              {/* <hr/> */}
+              {examplesList.length !== 1 && 
+                <Divider size="small" variant="dashed" style={{ borderColor: '#7cb305' }} dashed></Divider>
+              }
               <Tag color="geekblue" className="example-cmd-tag">{ex.command_line}</Tag>
               <br />
               {ex.explanation && 
@@ -163,7 +166,7 @@ const ProgramDetails = () => {
             Chưa có mô tả cho lệnh này.
           </Paragraph>
         )}
-        <hr></hr>
+        {/* <hr></hr> */}
         <br></br>
         {/* ========Description======== */}
 
