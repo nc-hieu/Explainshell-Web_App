@@ -124,13 +124,13 @@ const ExamplesTab = ({ editingProgram }) => {
           // Tìm cờ trong mảng optionsList để lấy tên
           const opt = optionsList.find(o => o.id === record.option_id);
           const optName = opt ? (opt.short_name || opt.long_name) : `#${record.option_id}`;
-          return <Tag color="orange">Cờ: {optName}</Tag>;
+          return <Tag color="orange">[Option] {optName}</Tag>;
         }
         if (record.group_id) {
           // Tìm nhóm trong mảng groupsList để lấy tên
           const grp = groupsList.find(g => g.id === record.group_id);
           const grpName = grp ? grp.title : `#${record.group_id}`;
-          return <Tag color="purple">Nhóm: {grpName}</Tag>;
+          return <Tag color="purple">[Group] {grpName}</Tag>;
         }
         return <Tag color="green">Lệnh chung</Tag>;
       }

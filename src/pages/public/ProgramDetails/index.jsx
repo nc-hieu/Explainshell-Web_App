@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Typography, Card, Spin, Space, Tag, Button, Empty, Divider } from 'antd';
 import { ArrowLeftOutlined, BookOutlined, CodeOutlined } from '@ant-design/icons';
 import { programService } from '../../../services/program.service';
@@ -143,6 +143,7 @@ const ProgramDetails = () => {
               <BookOutlined style={{ color: 'var(--color-primary)' , fontSize: '28px' }} />
               <Title level={2} className="program-title" style={{ margin: 0 }}>{programData.name}</Title>
             </Space>
+
             
             {/* GẮN NÚT YÊU THÍCH VÀO GÓC PHẢI THẺ CARD */}
             <FavoriteButton programId={programData.id} />
@@ -150,9 +151,13 @@ const ProgramDetails = () => {
         }
       >
         {programData.categories && programData.categories.length > 0 && (
-          <Space className="category-tags-wrapper" wrap>
-            {programData.categories.map(cat => <Tag key={cat.id} color="purple">{cat.name}</Tag>)}
-          </Space>
+            <Space className="category-tags-wrapper" wrap>
+              {programData.categories.map(cat => 
+                <Link to={`/categories/${cat.slug}`} style={{ textDecoration: 'none' }}>
+                  <Tag key={cat.id} color="purple">{cat.name}</Tag>
+                </Link>
+              )}
+            </Space>
         )}
         
         {/* ========Description======== */}

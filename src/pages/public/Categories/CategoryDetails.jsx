@@ -43,7 +43,8 @@ const CategoryDetails = () => {
     if (slug) {
       fetchCategoryDetails(slug);
       setSearchProgramText(''); // Xóa text tìm kiếm khi chuyển trang
-      setShowPrograms(false); // Reset lại trạng thái ẩn lệnh khi chuyển sang danh mục khác
+      isLinuxCategory ? setShowPrograms(false) : setShowPrograms(true);
+      // setShowPrograms(true); // Reset lại trạng thái ẩn lệnh khi chuyển sang danh mục khác
     }
   }, [slug]);
 
@@ -322,14 +323,14 @@ const CategoryDetails = () => {
             ) : filteredPrograms.length > 0 ? (
               <div>
                 {filteredPrograms.map(prog => (
-                  <div key={prog.id} className="program-list-item">
+                  <div key={prog.id} className="program-list-item"  onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}>
                     <div className="program-icon">
                       <CodeOutlined />
                     </div>
                     <div>
                       <div 
                         className="program-title"
-                        onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}
+                        // onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}
                       >
                         {prog.name}
                       </div>
