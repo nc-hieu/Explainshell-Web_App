@@ -8,8 +8,9 @@ export const categoryService = {
   },
 
   // Lấy danh sách danh mục gốc (Cấp 1)
-  getRoots: async () => {
-    const response = await api.get('/categories/roots');
+  getRoots: async (topicSlug) => {
+    const url = topicSlug ? `/categories/roots?topic_slug=${topicSlug}` : '/categories/roots';
+    const response = await api.get(url);
     return response.data;
   },
 

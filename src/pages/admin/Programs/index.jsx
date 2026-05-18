@@ -13,6 +13,7 @@ import CategoriesTab from './components/CategoriesTab';
 import OptionsTab from './components/OptionsTab';
 import GroupsTab from './components/GroupsTab';
 import ExamplesTab from './components/ExamplesTab';
+import NotesTab from './components/NotesTab';
 
 const formatDate = (dateString) => {
   if (!dateString) return '-';
@@ -142,7 +143,8 @@ const Programs = () => {
     },
     { key: '3', label: 'Cờ lệnh (Options)', disabled: !editingProgram, children: <OptionsTab editingProgram={editingProgram} /> },
     { key: '4', label: 'Nhóm cờ (Groups)', disabled: !editingProgram, children: <GroupsTab editingProgram={editingProgram} /> },
-    { key: '5', label: 'Ví dụ (Examples)', disabled: !editingProgram, children: <ExamplesTab editingProgram={editingProgram} /> }
+    { key: '5', label: 'Ghi chú (Notes)', disabled: !editingProgram, children: <NotesTab editingProgram={editingProgram} /> },
+    { key: '6', label: 'Ví dụ (Examples)', disabled: !editingProgram, children: <ExamplesTab editingProgram={editingProgram} /> }
   ];
 
   return (

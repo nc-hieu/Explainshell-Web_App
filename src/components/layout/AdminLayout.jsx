@@ -8,7 +8,8 @@ import {
   CodeOutlined,
   SettingOutlined,
   FolderOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  AppstoreOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -21,18 +22,20 @@ const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const {logout} = useAuthStore();
+  
+  // 1. Lấy thêm thông tin user từ store (Giả sử bạn lưu thông tin người dùng trong biến `user`)
+  const { logout, user } = useAuthStore();
 
   const menuItems = [
-    { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Tổng quan' },
-    { key: '/admin/programs', icon: <CodeOutlined />, label: 'Quản lý Lệnh' },
-    { key: '/admin/categories', icon: <FolderOutlined />, label: 'Danh mục' },
-    { key: '/admin/options', icon: <SettingOutlined />, label: 'Cấu hình' }, // Thêm tạm menu cấu hình
+    { key: '/nchieu-adm-exsh/dashboard', icon: <DashboardOutlined />, label: 'Tổng quan' },
+    { key: '/nchieu-adm-exsh/programs', icon: <CodeOutlined />, label: 'Quản lý Lệnh' },
+    { key: '/nchieu-adm-exsh/categories', icon: <FolderOutlined />, label: 'Danh mục' },
+    { key: '/nchieu-adm-exsh/topics', icon: <AppstoreOutlined />, label: 'Chủ đề (Topics)' },
   ];
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/nchieu-adm-exsh/login');
   };
 
   return (
@@ -53,16 +56,28 @@ const AdminLayout = () => {
       </Sider>
       
       <Layout style={{ background: 'transparent' }}>
-        <Header className="admin-header">
+        <Header className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          
+          {/* Bên trái: Nút thu phóng Sidebar */}
           <Button
             type="text"
             className="header-toggle-btn"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
           />
-          <Button type="primary" danger icon={<LogoutOutlined />} onClick={handleLogout}>
-            Đăng xuất
-          </Button>
+          
+          {/* Bên phải: Lời chào + Nút Đăng xuất */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* 2. Hiển thị lời chào. Dùng optional chaining (?.) để tránh lỗi nếu user chưa kịp load */}
+            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+              Xin chào, <strong style={{ color: 'var(--color-primary)' }}>{user?.username || 'Admin'}</strong>!
+            </span>
+            
+            <Button type="primary" danger icon={<LogoutOutlined />} onClick={handleLogout}>
+              Đăng xuất
+            </Button>
+          </div>
+
         </Header>
         
         <Content className="admin-content">

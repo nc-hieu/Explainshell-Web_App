@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Typography, Card, Spin, Space, Tag, Button, Empty, Divider } from 'antd';
 import { ArrowLeftOutlined, BookOutlined, CodeOutlined } from '@ant-design/icons';
 import { programService } from '../../../services/program.service';
+import { noteService } from '../../../services/note.service';
 import { historyService } from '../../../services/history.service';
 import { useAuthStore } from '../../../store/authStore';
 import DOMPurify from 'dompurify';
@@ -16,19 +17,20 @@ const { Title, Text, Paragraph } = Typography;
 
 const ProgramDetails = () => {
   const { token } = useAuthStore();
-  const { slug } = useParams(); 
+  const { program_slug } = useParams(); 
   const navigate = useNavigate();
 
   const savedSlugRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(null);
+  const [notes, setNotes] = useState([]);
 
   useEffect(() => {
-    if (slug) {
-      fetchCommandExplanation(slug);
+    if (program_slug) {
+      fetchCommandExplanation(program_slug);
     }
-  }, [slug]);
+  }, [program_slug]);
 
   const fetchCommandExplanation = async (programSlug) => {
     setLoading(true);
@@ -36,13 +38,20 @@ const ProgramDetails = () => {
       const data = await programService.getDetailsBySlug(programSlug);
       setProgramData(data);
 
-      if (data && token && savedSlugRef.current !== data.slug) {
-        savedSlugRef.current = data.slug; 
+      if (data && token && savedSlugRef.current !== data.program_slug) {
+        savedSlugRef.current = data.program_slug; 
         historyService.create({
-          command_text: data.slug || data.name,
+          command_text: data.program_slug || data.name,
           explanation: data.description 
         }).catch(err => console.error("Lỗi lưu lịch sử ngầm:", err)); 
       }
+
+      // Nếu lấy được thông tin lệnh thành công, gọi tiếp API lấy Ghi chú
+      if (data?.id) {
+        const notesData = await noteService.getByProgram(data.id);
+        setNotes(Array.isArray(notesData) ? notesData : []);
+      }
+
     } catch (error) {
       setProgramData(null); 
     } finally {
@@ -111,15 +120,20 @@ const ProgramDetails = () => {
   };
   // Render Option=========================
 
-
-  if (loading) return <div className="status-container"><Spin size="large" tip="Đang tải tài liệu lệnh..." /></div>;
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px' }}>
+        <Spin size="large" tip="Đang tải dữ liệu..." />
+      </div>
+    );
+  }
 
   if (!programData) {
     return (
       <div className="explain-container status-container error">
         <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className="back-btn">Quay lại</Button>
         <Title level={3}>Không tìm thấy lệnh!</Title>
-        <p>Hệ thống không có dữ liệu cho lệnh: <strong>{slug}</strong></p>
+        <p>Hệ thống không có dữ liệu cho lệnh: <strong>{program_slug}</strong></p>
       </div>
     );
   }
@@ -189,7 +203,7 @@ const ProgramDetails = () => {
       )}
 
       {(!programData.options || programData.options.length === 0) && (
-        <Empty description="Lệnh này chưa được cập nhật các cờ lệnh." />
+        <Empty description="Lệnh này chưa được cập nhật Options!" />
       )}
 
       {/* 3. HIỂN THỊ THEO TỪNG NHÓM (OPTION GROUPS) */}
@@ -212,6 +226,44 @@ const ProgramDetails = () => {
             </div>
           );
         })}
+
+      {/*   4. HIỂN THỊ DANH SÁCH GHI CHÚ PHẲNG Ở DƯỚI CÙNG CỦA TRANG */}
+      {notes.length > 0 && (
+        <div className="notes-section">
+          {/* Thêm tiêu đề phần Ghi chú, dùng chung class group-title để đồng bộ style */}
+          <Title level={3} className="group-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOutlined style={{ color: 'var(--color-primary)' }} />
+            Ghi chú & Mẹo hay (Notes & Tips)
+          </Title>
+          <div className="notes-list-wrapper">
+            {notes.map(note => (
+              <>
+                {note.content && note.content.trim() !== "" && (
+                  <Card key={note.id} size="small" className="notes-card">
+                    <Space className="notes-tags-wrapper" wrap>
+                      {note.title && 
+                        <Tag key="purple" color="purple" variant="outlined" className="notes-tag">
+                          {note.title}
+                        </Tag>
+                      }
+                    </Space>
+                      {note.content ? (
+                        <div 
+                          className="notes-desc tiptap-content" 
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(note.content) }} 
+                        />
+                      ) : (
+                        <Paragraph className="notes-desc">
+                          Chưa có mô tả cho lệnh này.
+                        </Paragraph>
+                      )}
+                  </Card>
+                )}
+              </>
+            ))}
+          </div>
+        </div>
+      )}  
 
       
     </div>

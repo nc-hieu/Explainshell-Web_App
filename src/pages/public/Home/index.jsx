@@ -19,7 +19,7 @@ const Home = () => {
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         
         <div>
-          <Title level={1} style={{ fontSize: '3.5rem', marginBottom: 0, color: 'var(--text-primary)' }}>
+          <Title level={1} style={{ fontSize: '3.5rem', marginBottom: 0, color: 'var(--color-primary)' }}>
             ExplainShell
           </Title>
           <Text style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
@@ -43,12 +43,12 @@ const Home = () => {
         </Space>
 
         {/* --- NÚT DẪN SANG TRANG DANH MỤC --- */}
-        <div style={{ marginTop: '40px' }}>
+        <div style={{ marginTop: '30px' }}>
           <Button 
             type="dashed" 
             size="large" 
             icon={<AppstoreOutlined />}
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate('/topics')}
             style={{ 
               color: 'var(--color-primary)', 
               borderColor: 'var(--color-primary)',

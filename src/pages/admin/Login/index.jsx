@@ -35,7 +35,7 @@ const Login = () => {
 
         if (userInfo.roles === 'admin') {
           message.success(`Xin chào Admin ${userInfo.username}!`);
-          navigate('/admin/dashboard'); 
+          navigate('/nchieu-adm-exsh/dashboard'); 
         } else {
           // Xóa token bằng hàm chuẩn của Zustand
           logout();

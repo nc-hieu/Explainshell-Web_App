@@ -84,7 +84,7 @@
   /* ========================================
      PHẦN 3: NHÓM CỜ (OPTION GROUPS)
      ======================================== */
-  .group-section {
+  .group-section, .notes-section {
     margin-top: 55px;
 
     .group-title {
@@ -103,26 +103,27 @@
       // padding-left: 16px; // Thụt lề vào một chút để thấy cấp bậc cha-con
     }
   }
+  
 
   /* ========================================
      PHẦN 4: CỜ LỆNH (OPTIONS CARD)
      ======================================== */
-  .option-card {
+  .option-card, .notes-card {
     margin-bottom: 16px;
     border-left: 5px solid $color-primary; 
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     border-radius: 6px;
 
-    .option-tags-wrapper {
+    .option-tags-wrapper, .notes-tags-wrapper{
       margin-bottom: 8px;
     }
 
-    .option-tag {
+    .option-tag, .notes-tag {
       font-size: 0.9rem;
       padding: 4px 10px;
     }
 
-    .option-desc {
+    .option-desc, .notes-desc {
       font-size: 0.9rem;
       white-space: pre-wrap;
       margin: 0;
@@ -130,6 +131,9 @@
   }
 }
 
+/* ========================================
+     PHẦN 5: TipTap
+     ======================================== */
 .tiptap-content {
   color: var(--text-primary);
   line-height: 1.6;

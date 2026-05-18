@@ -43,7 +43,7 @@ const PublicLayout = () => {
         key: 'admin',
         icon: <CodeOutlined />,
         label: 'Vào trang Quản trị',
-        onClick: () => navigate('/admin'),
+        onClick: () => navigate('/nchieu-adm-exsh'),
       }
     ] : []),
     {

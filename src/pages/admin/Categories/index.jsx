@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, TreeSelect, Upload } from 'antd'; // Thêm Upload
+import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, TreeSelect, Upload, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { generateSlug, getImageUrl } from '../../../utils/helpers';
 import { categoryService } from '../../../services/category.service';
 import { uploadService } from '../../../services/upload.service';
+import { topicService } from '../../../services/topic.service';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]); 
+  const [rawCategories, setRawCategories] = useState([]); 
+  const [topicsList, setTopicsList] = useState([]); 
   const [loading, setLoading] = useState(false);
   
-  // Các State mới cho việc Thêm/Sửa
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [isTopicDisabled, setIsTopicDisabled] = useState(false);
+  
   const [form] = Form.useForm();
-
-  // State quản lý danh sách file ảnh đang được chọn
   const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
     fetchCategories();
+    fetchTopics(); 
   }, []);
+
+  const fetchTopics = async () => {
+    try {
+      const data = await topicService.getAll(0, 100);
+      setTopicsList(Array.isArray(data) ? data : data.items || []);
+    } catch (error) {
+      message.error('Không thể tải danh sách Chủ đề (Topics)!');
+    }
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      // Tạm gọi limit 100
       const data = await categoryService.getAll(0, 100);
-      const treeData = buildTree(data);
+      const items = Array.isArray(data) ? data : data.items || [];
+      
+      setRawCategories(items); 
+      
+      const treeData = buildTree(items);
       setCategories(treeData);
     } catch (error) {
       message.error('Không thể tải danh sách danh mục!');
@@ -67,25 +82,52 @@ const Categories = () => {
     return tree;
   };
 
-  // --- CÁC HÀM XỬ LÝ FORM ---
+  // --- MỚI: HÀM XỬ LÝ TẠO SLUG THÔNG MINH ---
+  // Kết hợp tên Topic và tên Danh mục để tạo Slug
+  const handleAutoGenerateSlug = (currentTopicId, currentCategoryName) => {
+    if (!currentCategoryName) {
+      form.setFieldsValue({ slug: '' });
+      return;
+    }
+    
+    let textToSlug = currentCategoryName;
+    
+    // Nếu đã chọn Topic, tìm tên Topic đó và nối vào trước tên danh mục
+    if (currentTopicId) {
+      const selectedTopic = topicsList.find(t => t.id === currentTopicId);
+      if (selectedTopic) {
+        textToSlug = `${selectedTopic.name} ${currentCategoryName}`;
+      }
+    }
+
+    form.setFieldsValue({ slug: generateSlug(textToSlug) });
+  };
+
   const handleAddNew = () => {
     setEditingCategory(null);
     form.resetFields();
-    setFileList([]); // Xóa sạch ảnh cũ khi bấm Thêm mới
+    setFileList([]); 
+    setIsTopicDisabled(false); 
     setIsModalVisible(true);
   };
 
   const handleEdit = (record) => {
     setEditingCategory(record);
-    form.setFieldsValue(record); // Đổ dữ liệu cũ vào Form
+    form.setFieldsValue(record); 
+    
+    if (record.parent_id) {
+      setIsTopicDisabled(true);
+    } else {
+      setIsTopicDisabled(false);
+    }
+
     const fullUrl = getImageUrl(record.icon_url);
-    // Nếu danh mục đang sửa có ảnh, hiển thị ảnh đó lên ô Upload
     if (record.icon_url) {
       setFileList([{
-        uid: '-1', // ID ảo để Ant Design quản lý
+        uid: '-1',
         name: 'icon.png',
         status: 'done',
-        url: fullUrl, // Hiển thị ảnh cũ từ Database
+        url: fullUrl,
       }]);
     } else {
       setFileList([]);
@@ -104,7 +146,6 @@ const Categories = () => {
     }
   };
 
-  // Hàm chặn Ant Design tự động Upload (Để ta tự xử lý khi bấm nút "Lưu lại")
   const beforeUpload = (file) => {
     const isImage = file.type.startsWith('image/');
     if (!isImage) {
@@ -116,36 +157,28 @@ const Categories = () => {
       message.error('Hình ảnh phải nhỏ hơn 2MB!');
       return Upload.LIST_IGNORE;
     }
-    return false; // Trả về false để ngăn không cho Antd tự gọi API
+    return false; 
   };
 
-//  Upload Icon===========================
-const handleFormSubmit = async (values) => {
+  const handleFormSubmit = async (values) => {
     try {
-      setLoading(true); // Tốt nhất nên bật loading lúc đang upload
+      setLoading(true); 
       
       const finalSlug = values.slug ? values.slug : generateSlug(values.name);
       let iconUrl = editingCategory ? editingCategory.icon_url : null;
 
-      // NẾU CÓ FILE ẢNH MỚI ĐƯỢC CHỌN (originFileObj tồn tại)
       if (fileList.length > 0 && fileList[0].originFileObj) {
         try {
           const formData = new FormData();
           formData.append('file', fileList[0].originFileObj);
-
-          // Gọi API Upload
           const uploadRes = await uploadService.uploadImage(formData); 
-          
-          // Lấy URL do Backend trả về (Ví dụ: /uploads/abc123xyz.png)
           iconUrl = uploadRes.url; 
-          
         } catch (uploadError) {
            message.error('Lỗi khi tải ảnh lên!');
            setLoading(false);
-           return; // Dừng lại không lưu category nữa nếu upload lỗi
+           return; 
         }
       } else if (fileList.length === 0) {
-        // Nếu người dùng xóa ảnh
         iconUrl = null;
       }
       
@@ -153,6 +186,7 @@ const handleFormSubmit = async (values) => {
         ...values,
         slug: finalSlug, 
         parent_id: values.parent_id || null, 
+        topic_id: values.topic_id || null, 
         icon_url: iconUrl 
       };
 
@@ -171,68 +205,44 @@ const handleFormSubmit = async (values) => {
       setLoading(false);
     }
   };
-//  End Upload Icone======================
+
+  const handleParentChange = (selectedParentId) => {
+    if (selectedParentId) {
+      const parentCat = rawCategories.find(c => c.id === selectedParentId);
+      if (parentCat && parentCat.topic_id) {
+        form.setFieldsValue({ topic_id: parentCat.topic_id });
+        setIsTopicDisabled(true);
+        
+        // Gọi hàm auto gen slug khi topic thay đổi do chọn parent
+        const currentName = form.getFieldValue('name');
+        handleAutoGenerateSlug(parentCat.topic_id, currentName);
+      }
+    } else {
+      setIsTopicDisabled(false);
+    }
+  };
 
   const columns = [
     {
-      title: 'Icon',
-      dataIndex: 'icon_url',
-      key: 'icon_url',
-      width: '10%',
+      title: 'Icon', dataIndex: 'icon_url', key: 'icon_url', width: '10%',
       render: (url) => {
-        // Sử dụng hàm helper để lấy đường dẫn chuẩn
         const fullUrl = getImageUrl(url);
-        
-        return fullUrl ? (
-          <img 
-            src={fullUrl} 
-            alt="icon" 
-            style={{ 
-              width: 30, 
-              height: 30,
-              //  borderRadius: '50%', 
-               objectFit: 'contain' 
-              }} 
-          />
-        ) : '-';
+        return fullUrl ? <img src={fullUrl} alt="icon" style={{ width: 30, height: 30, objectFit: 'contain' }} /> : '-';
       },
     },
+    { title: 'Tên danh mục', dataIndex: 'name', key: 'name', width: '25%', render: (text) => <strong>{text}</strong> },
     {
-      title: 'Tên danh mục',
-      dataIndex: 'name',
-      key: 'name',
-      width: '25%',
-      render: (text) => <strong>{text}</strong>,
+      title: 'Thuộc Topic', key: 'topic', width: '15%',
+      render: (_, record) => record.topic ? <Tag color="cyan">{record.topic.name}</Tag> : <span style={{ color: 'gray' }}>-</span>,
     },
+    { title: 'Slug', dataIndex: 'slug', key: 'slug', width: '20%', render: (slug) => <Tag color="blue">{slug}</Tag> },
     {
-      title: 'Slug',
-      dataIndex: 'slug',
-      key: 'slug',
-      width: '25%',
-      render: (slug) => <Tag color="blue">{slug}</Tag>,
-    },
-    {
-      title: 'Mô tả',
-      dataIndex: 'description',
-      key: 'description',
-    },
-    {
-      title: 'Hành động',
-      key: 'action',
+      title: 'Hành động', key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-            Sửa
-          </Button>
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa danh mục này?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />}>
-              Xóa
-            </Button>
+          <Button type="primary" icon={<EditOutlined />} onClick={() => handleEdit(record)}>Sửa</Button>
+          <Popconfirm title="Bạn có chắc chắn muốn xóa danh mục này?" onConfirm={() => handleDelete(record.id)} okText="Xóa" cancelText="Hủy">
+            <Button type="primary" danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
       ),
@@ -242,69 +252,38 @@ const handleFormSubmit = async (values) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2 style={{color: '#fbbf24'}}>Quản lý Danh mục (Categories)</h2>
+        <h2 style={{color: 'var(--color-primary, #fbbf24)'}}>Quản lý Danh mục (Categories)</h2>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
           Thêm danh mục
         </Button>
       </div>
 
-      <Table 
-        columns={columns} 
-        dataSource={categories} 
-        loading={loading}
-        pagination={false}
-      />
+      <Table columns={columns} dataSource={categories} loading={loading} pagination={false} />
 
-      {/* MODAL THÊM/SỬA DANH MỤC */}
       <Modal
         title={editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormSubmit}
-        >
-          {/* KHU VỰC TẢI ẢNH (MỚI) */}
+        <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
           <Form.Item label="Icon Danh mục (Hiển thị ngoài trang chủ)">
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={({ fileList: newFileList }) => setFileList(newFileList)}
-              beforeUpload={beforeUpload}
-              maxCount={1}
-              accept="image/*"
-            >
-              {fileList.length >= 1 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                </div>
-              )}
+            <Upload listType="picture-card" fileList={fileList} onChange={({ fileList: newFileList }) => setFileList(newFileList)} beforeUpload={beforeUpload} maxCount={1} accept="image/*">
+              {fileList.length >= 1 ? null : <div><PlusOutlined /><div style={{ marginTop: 8 }}>Tải ảnh</div></div>}
             </Upload>
           </Form.Item>
 
-          <Form.Item
-            name="name"
-            label="Tên Danh Mục"
-            rules={[{ required: true, message: 'Vui lòng nhập tên danh mục!' }]}
-          >
+          <Form.Item name="name" label="Tên Danh Mục" rules={[{ required: true, message: 'Vui lòng nhập tên danh mục!' }]}>
             <Input 
               placeholder="Ví dụ: File Management" 
               onChange={(e) => {
-                // Khi người dùng gõ Tên, tự động điền vào ô Slug
-                form.setFieldsValue({ slug: generateSlug(e.target.value) });
+                const currentTopicId = form.getFieldValue('topic_id');
+                handleAutoGenerateSlug(currentTopicId, e.target.value);
               }} 
             />
           </Form.Item>
 
-          <Form.Item
-            name="slug"
-            label="Slug (Đường dẫn tĩnh)"
-            // Đã bỏ rules required đi để không báo lỗi màu đỏ nếu người dùng vô tình xóa trắng
-          >
+          <Form.Item name="slug" label="Slug (Đường dẫn tĩnh)">
             <Input placeholder="Tự động sinh hoặc nhập tùy chỉnh (vd: file-management)" />
           </Form.Item>
 
@@ -313,7 +292,6 @@ const handleFormSubmit = async (values) => {
             label="Danh mục cha"
             tooltip="Bỏ trống nếu đây là danh mục gốc lớn nhất."
           >
-            {/* TreeSelect tự động nhận cấu trúc có mảng 'children' mà chúng ta đã làm ở Phần 1 */}
             <TreeSelect
               style={{ width: '100%' }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
@@ -321,25 +299,44 @@ const handleFormSubmit = async (values) => {
               placeholder="Chọn danh mục cha (tùy chọn)"
               treeDefaultExpandAll
               allowClear
-              // Giúp Ant Design hiểu trường nào hiển thị chữ, trường nào lấy ID
               fieldNames={{ label: 'name', value: 'id', children: 'children' }} 
+              onChange={handleParentChange} 
             />
           </Form.Item>
 
           <Form.Item
-            name="description"
-            label="Mô tả"
+            name="topic_id"
+            label="Thuộc Chủ đề (Topic)"
+            rules={[{ required: true, message: 'Vui lòng chọn một Chủ đề!' }]}
+            tooltip={isTopicDisabled ? "Chủ đề được tự động lấy theo Danh mục cha" : ""}
           >
+            <Select 
+              placeholder="Chọn Topic cho danh mục này" 
+              allowClear
+              showSearch
+              optionFilterProp="children" 
+              disabled={isTopicDisabled} 
+              onChange={(val) => {
+                // Gọi hàm auto gen slug khi topic thay đổi
+                const currentName = form.getFieldValue('name');
+                handleAutoGenerateSlug(val, currentName);
+              }}
+            >
+              {topicsList.map(topic => (
+                <Select.Option key={topic.id} value={topic.id}>
+                  {topic.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="description" label="Mô tả">
             <Input.TextArea rows={3} placeholder="Nhập mô tả cho danh mục này..." />
           </Form.Item>
 
           <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-            <Button onClick={() => setIsModalVisible(false)} style={{ marginRight: 8 }}>
-              Hủy
-            </Button>
-            <Button type="primary" htmlType="submit">
-              Lưu lại
-            </Button>
+            <Button onClick={() => setIsModalVisible(false)} style={{ marginRight: 8 }}>Hủy</Button>
+            <Button type="primary" htmlType="submit" loading={loading}>Lưu lại</Button>
           </Form.Item>
         </Form>
       </Modal>

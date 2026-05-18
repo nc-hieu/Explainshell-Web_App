@@ -18,7 +18,7 @@ const AdminProtectedRoute = () => {
 
   // 2. Nếu không có token (Chưa đăng nhập), ép chuyển hướng về trang đăng nhập Admin
   if (!token) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/nchieu-adm-exsh/login" replace />;
   }
 
   // 3. Nếu đã đăng nhập nhưng không phải Admin, hiển thị màn hình báo lỗi (hoặc đẩy về trang chủ)
