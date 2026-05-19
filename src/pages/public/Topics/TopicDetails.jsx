@@ -367,7 +367,7 @@ const TopicDetails = () => {
                     key={prog.slug || prog.name} 
                     className="program-list-item"  
                     // Điều hướng phẳng tuyệt đối sang trang chi tiết Lệnh dựa trên topic_slug hiện tại
-                    onClick={() => navigate(`/${topic_slug}/programs/${prog.slug || prog.name}`)}
+                    onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}
                   >
                     <div className="program-icon">
                       <CodeOutlined />
