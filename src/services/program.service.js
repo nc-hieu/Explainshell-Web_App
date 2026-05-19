@@ -46,6 +46,11 @@ export const programService = {
     return response.data;
   },
 
+  getByTopic: async (topicSlug, skip = 0, limit = 20) => {
+    const response = await api.get(`/programs/topic/${topicSlug}?skip=${skip}&limit=${limit}`);
+    return response.data;
+  },
+
   assignCategories: async (programId, categoryIds) => {
     const response = await api.put(`/program-categories/${programId}`, {
       category_ids: categoryIds
