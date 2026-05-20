@@ -149,9 +149,14 @@ const ExamplesTab = ({ editingProgram }) => {
       width: '15%',
       render: (_, r) => (
         <Space>
-          <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => handleOpenExampleModal(r)}></Button>
+          {/* <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => handleOpenExampleModal(r)}></Button>
           <Popconfirm title="Xóa ví dụ này?" onConfirm={() => handleDeleteExample(r.id)}>
             <Button size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm> */}
+
+          <Button icon={<EditOutlined />} onClick={() => handleOpenExampleModal(r)}>Sửa</Button>
+          <Popconfirm title="Xóa ghi chú này?" onConfirm={() => handleDeleteExample(r.id)}>
+            <Button danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
       )
@@ -177,6 +182,7 @@ const ExamplesTab = ({ editingProgram }) => {
 
       <Modal 
         title={editingExample ? "Sửa Ví dụ" : "Thêm Ví dụ Mới"} 
+        width={800}
         open={isExampleModalVisible} 
         onCancel={() => setIsExampleModalVisible(false)} 
         footer={null}

@@ -167,8 +167,9 @@ const ProgramDetails = () => {
         {programData.categories && programData.categories.length > 0 && (
             <Space className="category-tags-wrapper" wrap>
               {programData.categories.map(cat => 
-                <Link to={`/categories/${cat.slug}`} style={{ textDecoration: 'none' }}>
+                <Link to={`/${cat.topic.slug}/categories/${cat.slug}`} style={{ textDecoration: 'none' }}>
                   <Tag key={cat.id} color="purple">{cat.name}</Tag>
+                  
                 </Link>
               )}
             </Space>

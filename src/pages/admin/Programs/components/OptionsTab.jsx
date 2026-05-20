@@ -161,10 +161,16 @@ const OptionsTab = ({ editingProgram }) => {
       width: '15%',
       render: (_, r) => (
         <Space>
-          <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => handleOpenOptionModal(r)}></Button>
+          {/* <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => handleOpenOptionModal(r)}></Button>
           <Popconfirm title="Xóa cờ này?" onConfirm={() => handleDeleteOption(r.id)}>
             <Button size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm> */}
+
+          <Button icon={<EditOutlined />} onClick={() => handleOpenOptionModal(r)}>Sửa</Button>
+          <Popconfirm title="Xóa ghi chú này?" onConfirm={() => handleDeleteOption(r.id)}>
+            <Button danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
+          
         </Space>
       )
     }
@@ -189,6 +195,7 @@ const OptionsTab = ({ editingProgram }) => {
 
       <Modal 
         title={editingOption ? "Sửa Cờ" : "Thêm Cờ Mới"} 
+        width={800}
         open={isOptionModalVisible} 
         onCancel={() => setIsOptionModalVisible(false)} 
         footer={null}

@@ -74,9 +74,14 @@ const GroupsTab = ({ editingProgram }) => {
       title: 'Hành động',
       render: (_, r) => (
         <Space>
-          <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => handleOpenGroupModal(r)}>Sửa</Button>
+          {/* <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => handleOpenGroupModal(r)}>Sửa</Button>
           <Popconfirm title="Xóa nhóm này?" onConfirm={() => handleDeleteGroup(r.id)}>
             <Button size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm> */}
+
+          <Button icon={<EditOutlined />} onClick={() => handleOpenGroupModal(r)}>Sửa</Button>
+          <Popconfirm title="Xóa ghi chú này?" onConfirm={() => handleDeleteGroup(r.id)}>
+            <Button danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
       )
@@ -102,6 +107,7 @@ const GroupsTab = ({ editingProgram }) => {
 
       <Modal 
         title={editingGroup ? "Sửa Nhóm" : "Thêm Nhóm Mới"} 
+        width={800}
         open={isGroupModalVisible} 
         onCancel={() => setIsGroupModalVisible(false)} 
         footer={null}
