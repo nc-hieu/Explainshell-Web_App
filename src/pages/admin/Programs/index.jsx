@@ -146,7 +146,7 @@ const Programs = () => {
     { key: '4', label: 'Nhóm cờ (Groups)', disabled: !editingProgram, children: <GroupsTab editingProgram={editingProgram} /> },
     { key: '5', label: 'Ghi chú (Notes)', disabled: !editingProgram, children: <NotesTab editingProgram={editingProgram} /> },
     { key: '6', label: 'Ví dụ (Examples)', disabled: !editingProgram, children: <ExamplesTab editingProgram={editingProgram} /> },
-    { key: '7', label: 'Man Pages', disabled: !editingProgram, children: <ManPagesTab editingProgram={editingProgram} /> }
+    { key: '7', label: 'Trang hướng dẫn (Man Pages)', disabled: !editingProgram, children: <ManPagesTab editingProgram={editingProgram} /> }
   ];
 
   return (
@@ -213,7 +213,7 @@ const Programs = () => {
           { title: 'Thời gian tạo', dataIndex: 'created_at', key: 'created_at', render: (date) => <span style={{ color: 'var(--text-secondary, #9ca3af)' }}>{formatDate(date)}</span> },
           { title: 'Thời gian sửa', dataIndex: 'updated_at', key: 'updated_at', render: (date) => <span style={{ color: 'var(--text-secondary, #9ca3af)' }}>{formatDate(date)}</span> },
           {
-            title: 'Hành động', key: 'action',
+            title: 'Hành động', key: 'action', width: 200,
             render: (_, record) => (
               <Space size="middle">
                 <Button type="primary" icon={<EditOutlined />} onClick={() => handleEditProgram(record)}>Sửa</Button>

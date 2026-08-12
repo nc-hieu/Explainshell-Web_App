@@ -13,5 +13,15 @@ export const uploadService = {
     } catch (error) {
       throw error;
     }
-  }
+  },
+
+  deleteImage: async (icon_url) => {
+    try {
+      // Thêm tham số cấu hình headers vào request
+      const response = await api.delete(`/upload/${icon_url}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }, 
 };

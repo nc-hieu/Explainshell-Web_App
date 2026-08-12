@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, TreeSelect, Upload, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { generateSlug, getImageUrl } from '../../../utils/helpers';
+import { generateSlug, getImageUrl, getFileName } from '../../../utils/helpers';
 import { categoryService } from '../../../services/category.service';
 import { uploadService } from '../../../services/upload.service';
 import { topicService } from '../../../services/topic.service';
@@ -136,8 +136,18 @@ const Categories = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, icon_url) => {
     try {
+      if(icon_url){
+        try{
+          let file_name = getFileName(icon_url);
+          await uploadService.deleteImage(file_name);
+        }
+        catch(error){
+          message.error('Lỗi khi xóa icon!');
+          return;
+        }
+      }
       await categoryService.delete(id);
       message.success('Đã xóa danh mục thành công!');
       fetchCategories();
@@ -167,6 +177,23 @@ const Categories = () => {
       const finalSlug = values.slug ? values.slug : generateSlug(values.name);
       let iconUrl = editingCategory ? editingCategory.icon_url : null;
 
+      // 1. Kiểm tra trạng thái thay đổi ảnh
+      const isUploadingNewFile = fileList.length > 0 && fileList[0].originFileObj;
+      const isDeletingFile = fileList.length === 0;
+
+      // 2. LOGIC XÓA ẢNH CŨ (Nếu đang sửa, có ảnh cũ, và người dùng thay đổi ảnh)
+      if (editingCategory && editingCategory.icon_url && (isUploadingNewFile || isDeletingFile)) {
+        try {
+          let old_file_name = getFileName(editingCategory.icon_url);
+          await uploadService.deleteImage(old_file_name);
+        } catch (error) {
+          message.error('Lỗi khi xóa icon cũ trên hệ thống!');
+          // Bỏ return nếu Vẫn tiếp tục thực hiện để không chặn luồng cập nhật
+          return;
+        }
+      }
+
+      // 3. LOGIC UPLOAD ẢNH MỚI
       if (fileList.length > 0 && fileList[0].originFileObj) {
         try {
           const formData = new FormData();
@@ -181,7 +208,8 @@ const Categories = () => {
       } else if (fileList.length === 0) {
         iconUrl = null;
       }
-      
+       
+      // 4. LƯU DỮ LIỆU
       const submitData = {
         ...values,
         slug: finalSlug, 
@@ -232,16 +260,16 @@ const Categories = () => {
     },
     { title: 'Tên danh mục', dataIndex: 'name', key: 'name', width: '25%', render: (text) => <strong>{text}</strong> },
     {
-      title: 'Thuộc Topic', key: 'topic', width: '15%',
+      title: 'Topic', key: 'topic', width: '15%',
       render: (_, record) => record.topic ? <Tag color="cyan">{record.topic.name}</Tag> : <span style={{ color: 'gray' }}>-</span>,
     },
-    { title: 'Slug', dataIndex: 'slug', key: 'slug', width: '20%', render: (slug) => <Tag color="blue">{slug}</Tag> },
+    { title: 'Slug', dataIndex: 'slug', key: 'slug', render: (slug) => <Tag color="blue">{slug}</Tag> },
     {
-      title: 'Hành động', key: 'action',
+      title: 'Hành động', key: 'action', width:200,
       render: (_, record) => (
         <Space size="middle">
           <Button type="primary" icon={<EditOutlined />} onClick={() => handleEdit(record)}>Sửa</Button>
-          <Popconfirm title="Bạn có chắc chắn muốn xóa danh mục này?" onConfirm={() => handleDelete(record.id)} okText="Xóa" cancelText="Hủy">
+          <Popconfirm title="Bạn có chắc chắn muốn xóa danh mục này?" onConfirm={() => handleDelete(record.id, record.icon_url)} okText="Xóa" cancelText="Hủy">
             <Button type="primary" danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>

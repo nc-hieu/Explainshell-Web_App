@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { manPageService } from '../../../../services/manPage.service';
 import { osDistributionService } from '../../../../services/osDistribution.service';
 import RichTextEditor from '../../../../components/common/RichTextEditor';
+import { getImageUrl } from '../../../../utils/helpers'; 
 
 const ManPagesTab = ({ editingProgram }) => {
   const [manPagesList, setManPagesList] = useState([]);
@@ -86,7 +87,17 @@ const handleDeleteManpage = async (manPageId) => {
   const maPagesColumns = [
     { title: 'Distribution', 
       render: (_, record) => {
-      return <strong>{record.os?.name}</strong>
+      return(
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {record.os?.icon_url && (
+            <img 
+              src={getImageUrl(record.os.icon_url)} 
+              alt="icon" 
+              style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+            />)}
+          <span>{record.os?.name}</span>
+        </div>
+      )
     }},
     {title: 'Nội Dung',
       render: (record) => {
@@ -136,7 +147,18 @@ const handleDeleteManpage = async (manPageId) => {
           <Form.Item name="distro_id" label="Distro (Bắt buộc)" rules={[{ required: true, message: 'Chọn Distribution!' }]}>
             <Select allowClear placeholder="Chọn Distro ...">
               {distroList.map(distro => (
-                <Select.Option key={distro.id} value={distro.id}>{distro.name}</Select.Option>
+                <Select.Option key={distro.id} value={distro.id}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {distro.icon_url && (
+                    <img 
+                      src={getImageUrl(distro.icon_url)} 
+                      alt="icon" 
+                      style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+                    />
+                  )}
+                  <span>{distro.name}</span>
+                </div>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>    

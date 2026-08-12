@@ -35,3 +35,18 @@ export const getImageUrl = (path) => {
 
   return `${baseUrl}${cleanPath}`;
 };
+
+/**
+ * Hàm lấy tên file từ đường dẫn đầy đủ
+ * @param {string} filePath - Đường dẫn file (Ví dụ: "/uploads/4a8b772455ac45fe8caba2fb53dc13ae.png")
+ * @returns {string} - Tên file thuần túy (Ví dụ: "4a8b772455ac45fe8caba2fb53dc13ae.png")
+ */
+export const getFileName = (filePath) => {
+  // Kiểm tra nếu đường dẫn rỗng hoặc không phải chuỗi thì trả về chuỗi rỗng
+  if (!filePath || typeof filePath !== 'string') {
+    return '';
+  }
+
+  // Cắt chuỗi thành mảng bởi dấu '/' và lấy phần tử cuối cùng
+  return filePath.split('/').pop();
+};

@@ -14,9 +14,10 @@ import { useAuthStore } from '../../../store/authStore';
 // Import Component dùng chung
 import LiveSearchBar from '../../../components/common/LiveSearchBar';
 import FavoriteButton from '../../../components/common/FavoriteButton';
+import { getImageUrl } from '../../../utils/helpers'; 
 import './ProgramDetails.scss'; 
 
-// Import các Component con vừa tách
+// Import các Component con 
 import ExamplesSection from './ExamplesSection';
 import OptionsSection from './OptionsSection';
 import NotesSection from './NotesSection';
@@ -71,7 +72,17 @@ const ProgramDetails = () => {
   //=== Logic ManPages ===
   const manPagesData = programData?.man_pages || [];
   const items = manPagesData.map((manpage, index) => ({
-    label: manpage.os?.name || 'Unknown OS',
+    // label: manpage.os?.name || 'Unknown OS',
+    label: 
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {manpage.os?.icon_url && (
+          <img 
+            src={getImageUrl(manpage.os?.icon_url)} 
+            alt="icon" 
+            style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+          />)}
+        <span>{manpage.os?.name || 'Unknown OS'}</span>
+      </div>,
     key: manpage.source_url || `empty-url-${index}`,
   }));
 

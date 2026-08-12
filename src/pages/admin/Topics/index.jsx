@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, Upload, Switch } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { generateSlug, getImageUrl } from '../../../utils/helpers';
+import { generateSlug, getImageUrl, getFileName } from '../../../utils/helpers';
 import { topicService } from '../../../services/topic.service';
 import { uploadService } from '../../../services/upload.service'; // Import thêm uploadService
 
@@ -53,8 +53,18 @@ const Topics = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, icon_url) => {
     try {
+      if(icon_url){
+        try{
+          let file_name = getFileName(icon_url);
+          await uploadService.deleteImage(file_name);
+        }
+        catch(error){
+          message.error('Lỗi khi xóa icon!');
+          return;
+        }
+      }
       await topicService.delete(id);
       message.success('Đã xóa Topic thành công!');
       fetchTopics();
@@ -83,9 +93,25 @@ const Topics = () => {
       const finalSlug = values.slug ? values.slug : generateSlug(values.name);
       
       let iconUrl = editingTopic ? editingTopic.icon_url : null;
+
+      // 1. Kiểm tra trạng thái thay đổi ảnh
+      const isUploadingNewFile = fileList.length > 0 && fileList[0].originFileObj;
+      const isDeletingFile = fileList.length === 0;
+
+      // 2. LOGIC XÓA ẢNH CŨ (Nếu đang sửa, có ảnh cũ, và người dùng thay đổi ảnh)
+      if (editingTopic && editingTopic.icon_url && (isUploadingNewFile || isDeletingFile)) {
+        try {
+          let old_file_name = getFileName(editingTopic.icon_url);
+          await uploadService.deleteImage(old_file_name);
+        } catch (error) {
+          message.error('Lỗi khi xóa icon cũ trên hệ thống!');
+          // Bỏ return nếu Vẫn tiếp tục thực hiện để không chặn luồng cập nhật
+          return;
+        }
+      }
       
-      // LOGIC UPLOAD ẢNH
-      if (fileList.length > 0 && fileList[0].originFileObj) {
+      // 3. LOGIC UPLOAD ẢNH MỚI
+      if (isUploadingNewFile) {
         try {
           const formData = new FormData();
           formData.append('file', fileList[0].originFileObj);
@@ -103,6 +129,7 @@ const Topics = () => {
         iconUrl = null;
       }
 
+      // 4. LƯU DỮ LIỆU
       const submitData = {
         ...values,
         slug: finalSlug,
@@ -151,7 +178,7 @@ const Topics = () => {
       render: (_, record) => (
         <Space size="middle">
           <Button type="primary" icon={<EditOutlined />} onClick={() => handleEdit(record)}>Sửa</Button>
-          <Popconfirm title="Xóa Topic này?" onConfirm={() => handleDelete(record.id)}>
+          <Popconfirm title="Xóa Topic này?" onConfirm={() => handleDelete(record.id, record.icon_url)}>
             <Button type="primary" danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
