@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AutoComplete, Input, Typography } from 'antd';
+import { AutoComplete, Input, Typography, BorderBeam } from 'antd';
 import { SearchOutlined, ClockCircleOutlined, CodeOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import DOMPurify from 'dompurify';
-import './RichTextEditor.scss';
+import './RichTextEditor/RichTextEditor.scss';
 
 
 // Chú ý: Cập nhật lại đường dẫn import cho đúng với thư mục hiện tại của bạn
@@ -17,7 +17,11 @@ const { Text } = Typography;
 // Nhận vào các props: size, style, className và initialValue (giá trị mặc định)
 const LiveSearchBar = ({ size = 'middle', style, className, initialValue = '' }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { token } = useAuthStore();
+  
+  // Kiểm tra xem có phải đang ở trang chủ không? 
+  const isHome = location.pathname === '/';
 
   // State quản lý ô tìm kiếm
   const [searchText, setSearchText] = useState(initialValue);
@@ -73,7 +77,7 @@ const LiveSearchBar = ({ size = 'middle', style, className, initialValue = '' })
       const filtered = items.filter(p => p.name.toLowerCase().includes(keyword.toLowerCase()));
 
       const searchOptions = filtered.slice(0, 5).map(program => ({
-        value: program.slug,
+        value: program.name,
         label: (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <CodeOutlined style={{ marginRight: 8, color: 'var(--color-primary)' }} />
@@ -95,30 +99,42 @@ const LiveSearchBar = ({ size = 'middle', style, className, initialValue = '' })
 
   const handleSearchSubmit = (value) => {
     if (!value.trim()) return;
-    navigate(`/search?q=${encodeURIComponent(value.trim())}`);
+    navigate(`/explain?q=${encodeURIComponent(value.trim())}`);
   };
 
-  const handleSelectOption = (value) => {
-    navigate(`/programs/${value}`);
-  };
+  // const handleSelectOption = (value) => {
+  //   navigate(`/programs/${value}`);
+  // };
 
   return (
     <AutoComplete
       popupMatchSelectWidth={true}
       style={{ width: '100%', textAlign: 'left', ...style }}
       options={options}
-      onSelect={handleSelectOption}
+      onSelect={handleSearchSubmit}
       onSearch={(text) => setSearchText(text)}
       value={searchText}
     >
-      <Input.Search
-        placeholder="Ví dụ: tar -xvf archive.tar.gz"
-        allowClear
-        enterButton={<SearchOutlined />}
-        size={size}
-        onSearch={handleSearchSubmit}
-        className={className}
-      />
+      {isHome ? (
+        <Input.Search
+          placeholder="Ví dụ: tar -xvf archive.tar.gz"
+          allowClear
+          enterButton={<SearchOutlined />}
+          size={size}
+          onSearch={handleSearchSubmit}
+          className={className}
+        />
+      ): (
+        <Input.Search
+          placeholder="Ví dụ: tar -xvf archive.tar.gz"
+          allowClear
+          enterButton={<SearchOutlined />}
+          size={size}
+          onSearch={handleSearchSubmit}
+          className={className}
+          />
+      ) }
+      
     </AutoComplete>
   );
 };

@@ -6,7 +6,8 @@ import PublicLayout from '../components/layout/PublicLayout';
 
 // Import Public Pages
 import Home from '../pages/public/Home';
-import SearchResults from '../pages/public/SearchResults';
+import SearchResults from '../pages/public/Results/SearchResults';
+import ExplainResults from '../pages/public/Results/ExplainResults';
 import AuthPage from '../pages/public/AuthPage'; 
 import Profile from '../pages/public/Profile';  
 
@@ -23,7 +24,7 @@ import Programs from '../pages/admin/Programs';
 import Categories from '../pages/admin/Categories';
 // import Options from '../pages/admin/Options';
 import Topics from '../pages/admin/Topics';
-
+import DistrosLinux from '../pages/admin/DistrosLinux';
 
 import NotFound from '../pages/NotFound';
 import AdminProtectedRoute from '../components/common/AdminProtectedRoute';
@@ -38,11 +39,15 @@ const router = createBrowserRouter([
         index: true, // Trang chủ mặc định
         element: <Home />,
       },
+      // {
+      //   path: 'search', // Đường dẫn: /search?cmd=...
+      //   element: <SearchResults />,
+      // },
       {
-        path: 'search', // Đường dẫn: /search?cmd=...
-        element: <SearchResults />,
+        path: 'explain', // Đường dẫn: /search?cmd=...
+        element: <ExplainResults />,
       },
-      
+
       // 1. Trang danh sách các Topics
       { 
         path: 'topics', 
@@ -93,6 +98,7 @@ const router = createBrowserRouter([
           // { path: 'options', element: <Options /> },
           { path: 'categories', element: <Categories /> },
           { path: 'topics', element: <Topics /> },
+          { path: 'distros-linux', element: <DistrosLinux /> },
           { index: true, element: <Navigate to="/nchieu-adm-exsh/dashboard" replace /> }
         ],
       }

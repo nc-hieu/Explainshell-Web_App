@@ -69,7 +69,7 @@ const GroupsTab = ({ editingProgram }) => {
 
   const groupColumns = [
     { title: 'Tên Nhóm', dataIndex: 'title', render: text => <strong>{text}</strong> },
-    { title: 'Mô tả', dataIndex: 'description' },
+    // { title: 'Mô tả', dataIndex: 'description' },
     {
       title: 'Hành động',
       render: (_, r) => (
@@ -102,7 +102,7 @@ const GroupsTab = ({ editingProgram }) => {
         rowKey="id" 
         loading={loadingGroups} 
         columns={groupColumns} 
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 10 }}
       />
 
       <Modal 

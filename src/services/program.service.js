@@ -30,9 +30,17 @@ export const programService = {
     // Lưu ý: Cấu hình params 'keyword' hay 'q' tùy thuộc vào Backend FastAPI của bạn quy định.
     // Ở đây tôi đang giả định backend dùng ?keyword=...
     const response = await api.get(`/programs/search`, { params: { query } });
-    console.log("API Search Response:", response.data); // Debug: Xem dữ liệu trả về từ API
     return response.data;
   },
+
+    // Tìm kiếm lệnh
+  explain: async (query) => {
+    // Lưu ý: Cấu hình params 'keyword' hay 'q' tùy thuộc vào Backend FastAPI của bạn quy định.
+    // Ở đây tôi đang giả định backend dùng ?keyword=...
+    const response = await api.get(`/programs/explain`, { params: { query } });
+    return response.data;
+  },
+
 
   // Lấy chi tiết lệnh (bao gồm options, categories...) Theo ID
   getDetails: async (id) => {

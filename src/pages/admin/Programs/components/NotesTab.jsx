@@ -83,25 +83,25 @@ const NotesTab = ({ editingProgram }) => {
     {
       title: 'Tiêu đề Ghi chú',
       dataIndex: 'title',
-      width: '30%',
+      // width: '30%',
       render: (text) => <Text strong>{text}</Text>,
     },
-    {
-      title: 'Nội dung',
-      dataIndex: 'content',
-      render: (content) => (
-        // Chỉ hiển thị tối đa 2 dòng mô tả ở ngoài bảng cho gọn
-        <div 
-          style={{ 
-            display: '-webkit-box', 
-            WebkitLineClamp: 2, 
-            WebkitBoxOrient: 'vertical', 
-            overflow: 'hidden' 
-          }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} 
-        />
-      ),
-    },
+    // {
+    //   title: 'Nội dung',
+    //   dataIndex: 'content',
+    //   render: (content) => (
+    //     // Chỉ hiển thị tối đa 2 dòng mô tả ở ngoài bảng cho gọn
+    //     <div 
+    //       style={{ 
+    //         display: '-webkit-box', 
+    //         WebkitLineClamp: 2, 
+    //         WebkitBoxOrient: 'vertical', 
+    //         overflow: 'hidden' 
+    //       }}
+    //       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} 
+    //     />
+    //   ),
+    // },
     {
       title: 'Hành động',
       key: 'action',

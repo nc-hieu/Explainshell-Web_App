@@ -9,7 +9,8 @@ import {
   SettingOutlined,
   FolderOutlined,
   LogoutOutlined,
-  AppstoreOutlined
+  AppstoreOutlined,
+  LinuxOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -31,6 +32,7 @@ const AdminLayout = () => {
     { key: '/nchieu-adm-exsh/programs', icon: <CodeOutlined />, label: 'Quản lý Lệnh' },
     { key: '/nchieu-adm-exsh/categories', icon: <FolderOutlined />, label: 'Danh mục' },
     { key: '/nchieu-adm-exsh/topics', icon: <AppstoreOutlined />, label: 'Chủ đề (Topics)' },
+    { key: '/nchieu-adm-exsh/distros-linux', icon: <LinuxOutlined />, label: 'Distros Linux' },
   ];
 
   const handleLogout = () => {

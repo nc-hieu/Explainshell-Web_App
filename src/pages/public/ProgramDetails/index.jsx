@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Typography, Card, Spin, Space, Tag, Button, Empty, Divider } from 'antd';
-import { ArrowLeftOutlined, BookOutlined, CodeOutlined } from '@ant-design/icons';
+import { Typography, Card, Spin, Space, Tag, Button, Empty, Dropdown, message } from 'antd';
+import { ArrowLeftOutlined, BookOutlined, DownOutlined } from '@ant-design/icons';
+import { BorderBeam } from 'antd';
+import DOMPurify from 'dompurify';
+
+// Import Services & Store
 import { programService } from '../../../services/program.service';
 import { noteService } from '../../../services/note.service';
 import { historyService } from '../../../services/history.service';
 import { useAuthStore } from '../../../store/authStore';
-import DOMPurify from 'dompurify';
 
-// Import file SCSS và Component dùng chung
-import './ProgramDetails.scss'; 
+// Import Component dùng chung
 import LiveSearchBar from '../../../components/common/LiveSearchBar';
-import FavoriteButton from '../../../components/common/FavoriteButton'; // <-- IMPORT NÚT YÊU THÍCH
+import FavoriteButton from '../../../components/common/FavoriteButton';
+import './ProgramDetails.scss'; 
+
+// Import các Component con vừa tách
+import ExamplesSection from './ExamplesSection';
+import OptionsSection from './OptionsSection';
+import NotesSection from './NotesSection';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -25,13 +33,14 @@ const ProgramDetails = () => {
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(null);
   const [notes, setNotes] = useState([]);
-
+  
   useEffect(() => {
     if (program_slug) {
       fetchCommandExplanation(program_slug);
     }
   }, [program_slug]);
 
+  //=== Fetch Data - Program ===
   const fetchCommandExplanation = async (programSlug) => {
     setLoading(true);
     try {
@@ -46,80 +55,43 @@ const ProgramDetails = () => {
         }).catch(err => console.error("Lỗi lưu lịch sử ngầm:", err)); 
       }
 
-      // Nếu lấy được thông tin lệnh thành công, gọi tiếp API lấy Ghi chú
       if (data?.id) {
         const notesData = await noteService.getByProgram(data.id);
         setNotes(Array.isArray(notesData) ? notesData : []);
       }
-
     } catch (error) {
       setProgramData(null); 
     } finally {
       setLoading(false);
     }
   };
+  //=== END Fetch Data - Program ===
+  
 
-  // Render Examples=========================
-  const renderExamples = (examplesList, title = "Ví Dụ") => {
-    if (!examplesList || examplesList.length === 0) return null;
-    return (
-      <div className="example-box">
-        <Text strong className="example-title">
-          <CodeOutlined /> {title}
-        </Text>
-        <Space orientation="vertical" size="medium" style={{ width: '100%' }}>
-          {examplesList.map(ex => (
-            <div key={ex.id}>
-              {/* <hr/> */}
-              {examplesList.length !== 1 && 
-                <Divider size="small" variant="dashed" style={{ borderColor: '#7cb305' }} dashed></Divider>
-              }
-              <Tag color="geekblue" className="example-cmd-tag">{ex.command_line}</Tag>
-              <br />
-              {ex.explanation && 
-              <div>
-                <div 
-                  className=" tiptap-content example-decs" 
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(ex.explanation) }} 
-                />
-              </div> 
-            }
-             
-            </div>
-          ))}
-        </Space>
-      </div>
-    );
+  //=== Logic ManPages ===
+  const manPagesData = programData?.man_pages || [];
+  const items = manPagesData.map((manpage, index) => ({
+    label: manpage.os?.name || 'Unknown OS',
+    key: manpage.source_url || `empty-url-${index}`,
+  }));
+
+  const handleMenuMPClick = (e) => {
+    const targetUrl = e.key;
+    if (targetUrl && !targetUrl.startsWith('empty-url')) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      message.warning('Không có đường dẫn Manpage cho hệ điều hành này.');
+    }
   };
-  // End Render Examples=========================
 
-  // Render Option=========================
-  const renderOption = (opt, allExamples) => {
-    const optionExamples = allExamples?.filter(e => e.option_id === opt.id) || [];
-    return (
-      <Card key={opt.id} size="small" className="option-card">
-        <Space className="option-tags-wrapper" wrap>
-          {opt.short_name && <Tag color="magenta" className="option-tag">{opt.short_name}</Tag>}
-          {opt.long_name && <Tag color="cyan" className="option-tag">{opt.long_name}</Tag>}
-          {opt.is_featured && <Tag color="gold">Nổi bật</Tag>}
-          {opt.is_deprecated && <Tag color="red">Đã cũ</Tag>}
-        </Space>
-          {opt.description ? (
-            <div 
-              className="option-desc tiptap-content" 
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(opt.description) }} 
-            />
-          ) : (
-            <Paragraph className="option-desc">
-              Chưa có mô tả cho lệnh này.
-            </Paragraph>
-          )}
-        {renderExamples(optionExamples, "Ví Dụ")}
-      </Card>
-    );
+  const manPageProps = {
+    items,
+    onClick: handleMenuMPClick,
   };
-  // Render Option=========================
+  //=== END Logic ManPages ===
 
+
+  //=== Loading Page ===
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '100px' }}>
@@ -127,7 +99,10 @@ const ProgramDetails = () => {
       </div>
     );
   }
+  //=== END Loading Page ===
+ 
 
+  //=== Logic khi không tìm thấy dữ Program ===
   if (!programData) {
     return (
       <div className="explain-container status-container error">
@@ -137,6 +112,7 @@ const ProgramDetails = () => {
       </div>
     );
   }
+  //=== END Logic khi không tìm thấy dữ Program ===
 
   const allExamples = programData.examples || [];
   const generalExamples = allExamples.filter(e => !e.group_id && !e.option_id);
@@ -144,61 +120,82 @@ const ProgramDetails = () => {
 
   return (
     <div className="explain-container">
-      <div style={{ marginBottom: '25px' }}>
-          <LiveSearchBar size="large" className="custom-search-bar" initialValue={programData.slug} />
+      <div className="search-bar" >
+          <LiveSearchBar size="large" className="custom-search-bar" initialValue={programData.name} />
       </div>
-
-      {/* 1. THÔNG TIN LỆNH CHUNG */}
-      <Card 
-        className="program-card"
-        title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Space>
-              <BookOutlined style={{ color: 'var(--color-primary)' , fontSize: '28px' }} />
-              <Title level={2} className="program-title" style={{ margin: 0 }}>{programData.name}</Title>
-            </Space>
-
-            
-            {/* GẮN NÚT YÊU THÍCH VÀO GÓC PHẢI THẺ CARD */}
-            <FavoriteButton programId={programData.id} />
-          </div>
-        }
+      
+      {/* 1. THÔNG TIN LỆNH CHUNG */}    
+      <BorderBeam 
+        lineWidth={2} 
+        size={250}
+        color={[
+          { color: '#22c55e', percent: 0 },
+          { color: '#a3e635', percent: 54 },
+          { color: '#facc15', percent: 100 },
+        ]}
       >
-        {programData.categories && programData.categories.length > 0 && (
+        <Card 
+          className="program-card"
+          title={
+            <div className="pc-space-left">
+              <Space>
+                <BookOutlined style={{ color: 'var(--color-primary)' , fontSize: '28px' }} />
+                <Title level={2} className="program-title" style={{ margin: 0 }}>{programData.name}</Title>
+              </Space>
+
+              <div className="pc-space-right">
+                <div>
+                  <Dropdown menu={manPageProps} placement="bottomRight">
+                    <Button icon={<DownOutlined />} iconPlacement="end" >
+                      ManPages
+                    </Button>
+                  </Dropdown>
+                </div>
+                
+                {/* GẮN NÚT YÊU THÍCH VÀO GÓC PHẢI THẺ CARD */}
+                <div className="program-favorite-btn">
+                  <FavoriteButton programId={programData.id} />
+                </div>
+              </div>
+            </div>
+          }
+        >
+          {programData.categories && programData.categories.length > 0 && (
             <Space className="category-tags-wrapper" wrap>
               {programData.categories.map(cat => 
-                <Link to={`/${cat.topic.slug}/categories/${cat.slug}`} style={{ textDecoration: 'none' }}>
-                  <Tag key={cat.id} color="purple">{cat.name}</Tag>
-                  
+                <Link key={cat.id} to={`/${cat.topic?.slug}/categories/${cat.slug}`} style={{ textDecoration: 'none' }}>
+                  <Tag color="purple">{cat.name}</Tag>
                 </Link>
               )}
             </Space>
-        )}
-        
-        {/* ========Description======== */}
-        {programData.description ? (
-          <div 
-            className="description-text tiptap-content" 
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(programData.description) }} 
-          />
-        ) : (
-          <Paragraph className="description-text">
-            Chưa có mô tả cho lệnh này.
-          </Paragraph>
-        )}
-        {/* <hr></hr> */}
-        <br></br>
-        {/* ========Description======== */}
+          )}
+          
+          {/* ========Description======== */}
+          {programData.description ? (
+            <div 
+              className="description-text tiptap-content" 
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(programData.description) }} 
+            />
+          ) : (
+            <Paragraph className="description-text">
+              Chưa có mô tả cho lệnh này.
+            </Paragraph>
+          )}
+          <br />
+          {/* ========Description======== */}
 
-        {renderExamples(generalExamples, "Ví Dụ")}
-      </Card>
+          <ExamplesSection examplesList={generalExamples} title="Ví Dụ" />
+        </Card>
+      </BorderBeam>
 
       {/* 2. HIỂN THỊ CÁC CỜ KHÔNG THUỘC NHÓM NÀO */}
       {ungroupedOptions.length > 0 && (
         <div className="group-section">
           <Title level={3} className="group-title">Options</Title>
           <div className="group-options-wrapper">
-            {ungroupedOptions.map(opt => renderOption(opt, allExamples))}
+            {ungroupedOptions.map(opt => (
+              <OptionSection key={opt.id} opt={opt} allExamples={allExamples} />
+            ))}
           </div>
         </div>
       )}
@@ -209,64 +206,35 @@ const ProgramDetails = () => {
 
       {/* 3. HIỂN THỊ THEO TỪNG NHÓM (OPTION GROUPS) */}
       {programData.option_groups?.map(group => {
-          const groupOptions = programData.options?.filter(o => o.group_id === group.id) || [];
-          const groupExamples = allExamples.filter(e => e.group_id === group.id && !e.option_id);
-          return (
-            <div key={group.id} className="group-section">
-              <Title level={3} className="group-title">{group.title}</Title>
-              {group.description && group.description.trim() !== "" && (
-                <div 
-                  className="group-desc tiptap-content" 
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }} 
-                />
+        const groupOptions = programData.options?.filter(o => o.group_id === group.id) || [];
+        const groupExamples = allExamples.filter(e => e.group_id === group.id && !e.option_id);
+        
+        return (
+          <div key={group.id} className="group-section">
+            <Title level={3} className="group-title">{group.title}</Title>
+            
+            {group.description && group.description.trim() !== "" && (
+              <div 
+                className="group-desc tiptap-content" 
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }} 
+              />
+            )}
+            
+            <ExamplesSection examplesList={groupExamples} title="Ví Dụ" />
+            
+            <div className="group-options-wrapper">
+              {groupOptions.length > 0 ? (
+                groupOptions.map(opt => <OptionsSection key={opt.id} opt={opt} allExamples={allExamples} />)
+              ) : (
+                <Text type="secondary" italic>Nhóm này chưa có options nào.</Text>
               )}
-              {renderExamples(groupExamples, `Ví Dụ`)}
-              <div className="group-options-wrapper">
-                {groupOptions.length > 0 ? groupOptions.map(opt => renderOption(opt, allExamples)) : <Text type="secondary" italic>Nhóm này chưa có options nào.</Text>}
-              </div>
             </div>
-          );
-        })}
-
-      {/*   4. HIỂN THỊ DANH SÁCH GHI CHÚ PHẲNG Ở DƯỚI CÙNG CỦA TRANG */}
-      {notes.length > 0 && (
-        <div className="notes-section">
-          {/* Thêm tiêu đề phần Ghi chú, dùng chung class group-title để đồng bộ style */}
-          <Title level={3} className="group-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOutlined style={{ color: 'var(--color-primary)' }} />
-            Ghi chú & Mẹo hay (Notes & Tips)
-          </Title>
-          <div className="notes-list-wrapper">
-            {notes.map(note => (
-              <>
-                {note.content && note.content.trim() !== "" && (
-                  <Card key={note.id} size="small" className="notes-card">
-                    <Space className="notes-tags-wrapper" wrap>
-                      {note.title && 
-                        <Tag key="purple" color="purple" variant="outlined" className="notes-tag">
-                          {note.title}
-                        </Tag>
-                      }
-                    </Space>
-                      {note.content ? (
-                        <div 
-                          className="notes-desc tiptap-content" 
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(note.content) }} 
-                        />
-                      ) : (
-                        <Paragraph className="notes-desc">
-                          Chưa có mô tả cho lệnh này.
-                        </Paragraph>
-                      )}
-                  </Card>
-                )}
-              </>
-            ))}
           </div>
-        </div>
-      )}  
+        );
+      })}
 
-      
+      {/* 4. HIỂN THỊ DANH SÁCH GHI CHÚ */}
+      <NotesSection notes={notes} />
     </div>
   );
 };

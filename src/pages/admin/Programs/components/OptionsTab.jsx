@@ -190,7 +190,7 @@ const OptionsTab = ({ editingProgram }) => {
         rowKey="id" 
         loading={loadingOptions} 
         columns={optionColumns} 
-        pagination={{ pageSize: 8 }} // Tăng số lượng hiển thị vì có phân nhóm rồi
+        pagination={{ pageSize: 10 }} // Tăng số lượng hiển thị vì có phân nhóm rồi
       />
 
       <Modal 

@@ -1,0 +1,40 @@
+.tiptap-content {
+  .ProseMirror-trailingBreak {
+    display: none !important;
+  }
+}
+
+/* Áp dụng tương tự nếu bạn đang dùng class bọc ngoài khác */
+.tiptap-public-content {
+  .ProseMirror-trailingBreak {
+    display: none !important;
+  }
+}
+
+.rich-text-viewer {
+  .custom-code-block {
+    position: relative;
+
+    &:hover .code-copy-btn {
+      opacity: 1;
+    }
+
+    .copy-btn-container {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 1;
+    }
+
+    .code-copy-btn {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      color: var(--text-primary) !important;
+      background: color-mix(in srgb, var(--text-primary) 8%, transparent) !important;
+
+      &:hover {
+        background: color-mix(in srgb, var(--text-primary) 15%, transparent) !important;
+      }
+    }
+  }
+}

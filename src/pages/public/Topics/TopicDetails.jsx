@@ -272,7 +272,7 @@ const TopicDetails = () => {
       {!showPrograms && (
         <>
           <Title level={4} className="section-title" style={{color: 'var(--color-primary)' }}>
-              <FolderOpenOutlined /> Danh Mục thuộc {topicData.name}
+              <FolderOpenOutlined /> Danh mục thuộc {topicData.name}
           </Title>
           {categoryData.length > 0 ? (
             <div style={{ marginTop: 24 }}>

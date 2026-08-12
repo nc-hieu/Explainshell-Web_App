@@ -19,6 +19,10 @@
     // color: var(--color-primary);
   }
 
+  .search-bar{
+    margin-bottom: 25px;
+  }
+
   /* Màn hình chờ (Loading) và Lỗi (Error) */
   .status-container {
     text-align: center;
@@ -38,9 +42,19 @@
     border-left: 6px solid $color-primary; // Viền xanh dương đặc trưng ở cạnh trái
     margin-bottom: 32px;
 
+    .pc-space-left, .pc-space-right{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     .program-title {
       margin-bottom: 0;
       color: $color-primary;
+    }
+
+    .program-favorite-btn{
+      margin-left: 10px;
     }
 
     .category-tags-wrapper {
@@ -90,7 +104,9 @@
     .group-title {
       // color: #595959;
       border-bottom: 2px solid #e8e8e8; // Đường kẻ gạch dưới tên nhóm
+      padding: 10px;
       padding-bottom: 8px;
+      // position: relative;
     }
 
     .group-desc {
@@ -131,59 +147,3 @@
   }
 }
 
-/* ========================================
-     PHẦN 5: TipTap
-     ======================================== */
-.tiptap-content {
-  color: var(--text-primary);
-  line-height: 1.6;
-  font-size: 0.8rem;
-
-  /* Giữ nguyên khoảng cách đoạn văn */
-  p {
-    margin-bottom: 0.75rem;
-  }
-
-  /* Hiển thị danh sách dấu chấm/số đẹp mắt */
-  ul, ol {
-    padding-left: 24px;
-    margin-bottom: 1rem;
-  }
-
-  /* Hiển thị thẻ in nghiêng, gạch chân chuẩn xác */
-  em { font-style: italic; }
-  u { text-decoration: underline; }
-  s { text-decoration: line-through; }
-  strong { font-weight: bold; }
-
-  /* ĐỊNH DẠNG KHỐI MÃ (CODE BLOCK) - Kế thừa từ thiết kế cũ */
-  pre {
-    // background-color: #1e1e1e;
-    background-color:  var(--border-color);
-    // color: #d4d4d4;
-    color: var(--text-primary);
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-family: 'Courier New', Courier, monospace;
-    overflow-x: auto;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-
-    code {
-      color: inherit;
-      padding: 0;
-      background: none;
-      font-size: 0.95rem;
-    }
-  }
-
-  /* ĐỊNH DẠNG MÃ NỘI TUYẾN (INLINE CODE) */
-  code {
-    background-color: var(--bg-hover);
-    color: var(--color-primary);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.9rem;
-  }
-}

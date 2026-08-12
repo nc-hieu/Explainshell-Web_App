@@ -13,7 +13,7 @@ import {
   OrderedListOutlined 
 } from '@ant-design/icons';
 
-import './RichTextEditor.scss'; // File CSS chúng ta sẽ tạo ở Bước 3
+import './RichTextEditor.scss'; // File CSS chúng ta sẽ tạo ở Bước 3/
 
 const MenuBar = ({ editor }) => {
   if (!editor) {

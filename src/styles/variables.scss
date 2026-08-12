@@ -15,6 +15,7 @@
   --text-primary: #111827;  // Chữ chính (Đen xám)
   --text-secondary: #6b7280;// Chữ phụ (Xám vừa)
   --border-color: #e5e7eb;  // Viền xám nhạt
+  --code-color: #f6f8fa;  // Viền xám nhạt
 
   // --color-primary: #fbbf24; // Màu Vàng Cam chủ đạo (Giữ nguyên để nhận diện thương hiệu)
 //   --color-primary: #f9a115;
@@ -34,6 +35,7 @@
   --text-primary: #ffffff;  // Chữ trắng
   --text-secondary: #9ca3af;// Chữ xám nhạt
   --border-color: #2d313f;  // Viền tối
+  --code-color: #030303;  // Viền tối
 
   --color-primary: #fbbf24; // Màu Vàng Cam chủ đạo
 }
@@ -47,6 +49,7 @@ $bg-sider: var(--bg-sider);
 $text-primary: var(--text-primary);
 $text-secondary: var(--text-secondary);
 $border-color: var(--border-color);
+$code-color: var(--code-color);
 $color-primary: var(--color-primary);
 
 /* Cài đặt chung cho thẻ body */
@@ -55,4 +58,84 @@ body {
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease; // Hiệu ứng chuyển theme mượt mà
+}
+
+
+/* ========================================
+  TipTap
+======================================== */
+.tiptap-content {
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 0.8rem;
+
+  p {
+    margin-bottom: 0.75rem;
+  }
+
+  ul, ol {
+    padding-left: 24px;
+    margin-bottom: 1rem;
+  }
+
+  em { font-style: italic; }
+  u { text-decoration: underline; }
+  s { text-decoration: line-through; }
+  strong { font-weight: bold; }
+
+  /* ĐỊNH DẠNG KHỐI MÃ (CODE BLOCK) */
+  pre {
+    position: relative;
+    background-color: var(--code-color);
+    color: var(--text-primary);
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+    overflow-x: auto;
+    margin: 0.5rem 0 1rem;
+    tab-size: 2;
+
+    /* Thanh cuộn ngang gọn hơn */
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--text-primary) 25%, transparent);
+      border-radius: 4px;
+    }
+
+    code {
+      display: block;
+      color: inherit;
+      padding: 0;
+      background: none;
+      border: none;
+      font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      white-space: pre;
+      word-break: normal;
+      font-variant-ligatures: none;
+
+      ::selection {
+        background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+      }
+    }
+  }
+
+  /* ĐỊNH DẠNG MÃ NỘI TUYẾN (INLINE CODE) */
+  code {
+    background-color: var(--bg-hover);
+    color: var(--color-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', Courier, monospace;
+    font-size: 0.85em; /* dùng em để tự co giãn theo chữ cha */
+    white-space: nowrap;
+  }
+
+  /* Nếu inline code nằm trong pre thì không áp style nowrap/inline nữa */
+  pre code {
+    white-space: pre;
+  }
 }

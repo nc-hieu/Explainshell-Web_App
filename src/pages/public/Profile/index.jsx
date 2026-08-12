@@ -28,13 +28,13 @@ const Profile = () => {
 
   const tabItems = [
     { key: '1', label: <span><UserOutlined /> Thông tin</span>, children: <InfoTab user={user} /> },
-    { key: '2', label: <span><KeyOutlined /> Đổi mật khẩu</span>, children: <PasswordTab /> },
-    { key: '3', label: <span><ClockCircleOutlined /> Lịch sử tìm kiếm</span>, children: <HistoryTab /> },
+    { key: '2', label: <span><ClockCircleOutlined /> Lịch sử tìm kiếm</span>, children: <HistoryTab /> },
     { 
-      key: '4', 
+      key: '3', 
       label: <span><StarOutlined /> Lệnh yêu thích</span>, 
-      children: <FavoriteTab /> // <--- 2. THAY THẾ CHỖ NÀY
-    }
+      children: <FavoriteTab />
+    },
+    { key: '4', label: <span><KeyOutlined /> Đổi mật khẩu</span>, children: <PasswordTab /> },
   ];
 
   return (

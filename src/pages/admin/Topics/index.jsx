@@ -132,7 +132,7 @@ const Topics = () => {
       render: (url) => url ? <img src={getImageUrl(url)} alt="icon" style={{width: 30, height: 30, objectFit: 'contain'}} /> : '-'
     },
     {
-      title: 'Tên Topic', dataIndex: 'name', 
+      title: 'Tên Topic', dataIndex: 'name', width: 100,
       render: (text) => <strong>{text}</strong>
     },
     {

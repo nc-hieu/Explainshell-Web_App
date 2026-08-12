@@ -177,7 +177,7 @@ const ExamplesTab = ({ editingProgram }) => {
         rowKey="id" 
         loading={loadingExamples} 
         columns={exampleColumns} 
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 10 }}
       />
 
       <Modal 

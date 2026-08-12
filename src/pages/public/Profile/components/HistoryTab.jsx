@@ -3,6 +3,8 @@ import { List, Popconfirm, Button, Typography, message, Tooltip } from 'antd';
 import { DeleteOutlined, CodeOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { historyService } from '../../../../services/history.service';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
+import '../../../../styles/variables.scss';
 
 const { Text } = Typography;
 
@@ -26,6 +28,10 @@ const HistoryTab = () => {
     } finally {
       setLoadingHistory(false);
     }
+  };
+
+  const handleQuickSearch = (value) => {
+    navigate(`/search?q=${encodeURIComponent(value)}`);
   };
 
   const handleDeleteAllHistories = async () => {
@@ -83,12 +89,25 @@ const HistoryTab = () => {
               <div className="history-icon-box">
                 <CodeOutlined />
               </div>
-              <a className="history-command" onClick={() => navigate(`/programs/${item.command_text}`)}>
+              <a className="history-command" onClick={()=>handleQuickSearch(item.command_text)}>{item.command_text}</a>
+              
+              {/* <a className="history-command" onClick={() => navigate(`/programs/${item.command_text}`)}>
                 {item.command_text}
-              </a>
-              <span className="history-desc">
+              </a> */}
+
+              {/* <div 
+                className="description-text tiptap-content" 
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.explanation) }} 
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: 'block',
+                }}
+              /> */}
+              {/* <span className="history-desc">
                 - {item.explanation || 'Không có mô tả'}
-              </span>
+              </span> */}
             </div>
 
             {/* Cột phải: Thời gian + Nút xóa */}

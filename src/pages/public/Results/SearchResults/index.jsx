@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { List, Card, Spin, Typography, Button, Space } from 'antd';
 import { ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
-import { programService } from '../../../services/program.service';
-import LiveSearchBar from '../../../components/common/LiveSearchBar';
+import { programService } from '../../../../services/program.service';
+import LiveSearchBar from '../../../../components/common/LiveSearchBar';
 import DOMPurify from 'dompurify';
-
-
 
 const { Title, Text, Paragraph } = Typography;
 
