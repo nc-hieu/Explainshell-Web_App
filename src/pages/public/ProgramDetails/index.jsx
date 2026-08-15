@@ -205,7 +205,7 @@ const ProgramDetails = () => {
           <Title level={3} className="group-title">Options</Title>
           <div className="group-options-wrapper">
             {ungroupedOptions.map(opt => (
-              <OptionSection key={opt.id} opt={opt} allExamples={allExamples} />
+              <OptionsSection key={opt.id} opt={opt} allExamples={allExamples} />
             ))}
           </div>
         </div>

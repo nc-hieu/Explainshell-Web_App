@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { List, Popconfirm, Button, Typography, message, Tooltip } from 'antd';
-import { DeleteOutlined, CodeOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { List, Popconfirm, Button, Typography, message, Tooltip, Tag } from 'antd';
+import { DeleteOutlined, CodeOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined} from '@ant-design/icons';
 import { historyService } from '../../../../services/history.service';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
@@ -31,7 +31,7 @@ const HistoryTab = () => {
   };
 
   const handleQuickSearch = (value) => {
-    navigate(`/search?q=${encodeURIComponent(value)}`);
+    navigate(`/explain?q=${encodeURIComponent(value)}`);
   };
 
   const handleDeleteAllHistories = async () => {
@@ -109,7 +109,11 @@ const HistoryTab = () => {
                 - {item.explanation || 'Không có mô tả'}
               </span> */}
             </div>
-
+            <div className="history-status">
+              {item.status === "FOUND" && <Tag color="#87d068" variant = "outlined" icon={<CheckCircleOutlined />}>FOUND</Tag>}
+              {item.status === "PARTIAL" && <Tag color="#2db7f5" variant = "outlined" icon={<ExclamationCircleOutlined />} >PARTIAL</Tag>}
+              {item.status === "NOT_FOUND" && <Tag color="#f50" variant = "outlined" icon={<CloseCircleOutlined />}>NOT FOUND</Tag>}
+            </div>
             {/* Cột phải: Thời gian + Nút xóa */}
             <Tooltip title={formatDate(item.created_at)}>
               <div className="history-time">

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Card, Spin, Typography, Button, BorderBeam } from 'antd';
-import { LockOutlined, UnlockOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons';
+import { Spin, Typography, Button, BorderBeam } from 'antd';
+import { LockOutlined, UnlockOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { programService } from '../../../../services/program.service';
 import LiveSearchBar from '../../../../components/common/LiveSearchBar';
 import DOMPurify from 'dompurify';
@@ -10,6 +10,7 @@ import { ReactFlow, Background, Controls,
          useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './ExplainResults.scss';
+
 const { Title, Text } = Typography;
 
 // --- BẢNG MÀU CHO TỪNG OPTION (mỗi option 1 màu riêng, giống explainShell) ---
@@ -75,9 +76,9 @@ const ExplanationNode = ({ data }) => (
         size={200}
         style={{borderRadius: '10px'}}
         color = {[
-          { color: '#2f54eb ', percent: 0 },
-          { color: '#722ed1 ', percent: 44 },
-          { color: '#ff85c0 ', percent: 100 },
+          { color: '#2f54eb', percent: 0 },
+          { color: '#722ed1', percent: 44 },
+          { color: '#ff85c0', percent: 100 },
         ]}>
           <div className="explanationNode__cardHeader">
           <div className="explanationNode__cardHeader--title">
@@ -122,7 +123,7 @@ const ExplanationNode = ({ data }) => (
               type="link"
               onClick={data.onViewDetail}
             >
-              Xem chi tiết {data.onViewDetail}<ArrowRightOutlined />
+              Xem chi tiết<ArrowRightOutlined />
             </Button>
           </div>)}
         </div>
@@ -170,11 +171,12 @@ const ExplainResults = () => {
 // 1. Khai báo state quản lý nodes và edges
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [canvasHeight, setCanvasHeight] = useState(6000);
+  const [canvasHeight, setCanvasHeight] = useState(600);
 
   // 2. Cập nhật nodes và edges mỗi khi explainData thay đổi
   useEffect(() => {
-    if (!explainData || !explainData.program) return;
+    // Ktra dữ liệu mảng mới từ API
+    if (!explainData || !Array.isArray(explainData) || explainData.length === 0) return;
 
     const newNodes = [];
     const newEdges = [];
@@ -186,83 +188,105 @@ const ExplainResults = () => {
 
     let cursorX = 60;
     let cursorY = 200; 
+    let colorIndex = 0; // Biến chạy màu liên tục cho tất cả các thành phần
 
-    const mainColor = 'var(--color-primary, #e85d2f)';
-    const mainLabel = explainData.program.name;
-    const mainWidth = measureTextWidth(mainLabel);
+    // Lặp qua mảng các lệnh đã được Backend bóc tách (Ví dụ có Pipeline)
+    explainData.forEach((cmdBlock, cmdIndex) => {
+      const { program, matched_options } = cmdBlock;
+      if (!program) return;
 
-    // --- Command ---
-    newNodes.push({
-      id: 'cmd-main',
-      type: 'command',
-      position: { x: cursorX, y: COMMAND_Y },
-      data: { label: mainLabel, color: mainColor },
-      // XÓA: draggable: false
-    });
+      const progColor = PALETTE[colorIndex % PALETTE.length];
+      colorIndex++;
+      
+      const mainLabel = program.name;
+      const mainWidth = measureTextWidth(mainLabel);
+      
+      // ID động có thêm cmdIndex để không trùng lặp khi nối chuỗi lệnh
+      const cmdProgId = `cmd-prog-${cmdIndex}-${program.id || 'new'}`;
+      const descProgId = `desc-prog-${cmdIndex}-${program.id || 'new'}`;
 
-    newNodes.push({
-      id: 'desc-main',
-      type: 'explanation',
-      position: { x: CARD_X, y: cursorY },
-      data: {
-        title: mainLabel,
-        description: explainData.program.description,
-        color: mainColor,
-        onViewDetail: () => navigate(`/programs/${explainData.program.slug}`),
-      },
-      // XÓA: draggable: false
-    });
-
-    newEdges.push({
-      id: 'edge-main',
-      source: 'cmd-main',
-      target: 'desc-main',
-      type: 'default',
-      style: { stroke: mainColor, strokeWidth: 2.5 },
-    });
-    // --- END Command ---
-
-    cursorX += mainWidth + TOKEN_GAP;
-    cursorY += estimateCardHeight(explainData.program.description) + CARD_GAP_Y;
-
-    // --- Option ---
-    explainData.matched_options?.forEach((opt, index) => {
-      const color = PALETTE[index % PALETTE.length];
-      const label = opt.short_name || opt.long_name;
-      const width = measureTextWidth(label);
-      const cmdId = `cmd-opt-${opt.id}`;
-      const descId = `desc-opt-${opt.id}`;
-
+      // --- Command ---
       newNodes.push({
-        id: cmdId,
+        id: cmdProgId,
         type: 'command',
         position: { x: cursorX, y: COMMAND_Y },
-        data: { label, color },
+        data: { label: mainLabel, color: progColor },
         // XÓA: draggable: false
       });
 
       newNodes.push({
-        id: descId,
+        id: descProgId,
         type: 'explanation',
         position: { x: CARD_X, y: cursorY },
         data: {
-          title: `${opt.short_name || ''}${opt.long_name ? `  |  ${opt.long_name}` : ''}`,
-          description: opt.description,
-          color,
+          title: mainLabel,
+          // Nếu is_found = false, hiển thị dòng mặc định
+          description: program.is_found ? program.description : '<p><em>Hệ thống chưa có mô tả cho lệnh này.</em></p>',
+          color: progColor,
+          // Chuyển hướng nếu tìm thấy lệnh
+          onViewDetail: program.is_found ? () => navigate(`/programs/${program.slug}`) : null,
         },
         // XÓA: draggable: false
       });
 
       newEdges.push({
-        id: `edge-${opt.id}`,
-        source: cmdId,
-        target: descId,
+        id: `edge-prog-${cmdIndex}`,
+        source: cmdProgId,
+        target: descProgId,
         type: 'default',
-        style: { stroke: color, strokeWidth: 2.5 },
+        style: { stroke: progColor, strokeWidth: 2.5 },
       });
+      // --- END Command ---
 
-      cursorX += width + TOKEN_GAP;
-      cursorY += estimateCardHeight(opt.description) + CARD_GAP_Y;
+      cursorX += mainWidth + TOKEN_GAP;
+      cursorY += estimateCardHeight(program.description) + CARD_GAP_Y;
+
+      // --- Option ---
+      matched_options?.forEach((opt, optIndex) => {
+        const color = PALETTE[colorIndex % PALETTE.length];
+        colorIndex++;
+
+        // Sử dụng original_text theo API mới
+        const label = opt.original_text;
+        const width = measureTextWidth(label);
+        const cmdOptId = `cmd-opt-${cmdIndex}-${optIndex}`;
+        const descOptId = `desc-opt-${cmdIndex}-${optIndex}`;
+
+        newNodes.push({
+          id: cmdOptId,
+          type: 'command',
+          position: { x: cursorX, y: COMMAND_Y },
+          data: { label, color },
+          // XÓA: draggable: false
+        });
+
+        newNodes.push({
+          id: descOptId,
+          type: 'explanation',
+          position: { x: CARD_X, y: cursorY },
+          data: {
+            title: opt.original_text,
+            // Xử lý khi cờ không tồn tại trong DB
+            description: opt.is_found ? opt.description : '<p><em>Chưa có dữ liệu cho cờ (option) này.</em></p>',
+            color,
+          },
+          // XÓA: draggable: false
+        });
+
+        newEdges.push({
+          id: `edge-opt-${cmdIndex}-${optIndex}`,
+          source: cmdOptId,
+          target: descOptId,
+          type: 'default',
+          style: { stroke: color, strokeWidth: 2.5 },
+        });
+
+        cursorX += width + TOKEN_GAP;
+        cursorY += estimateCardHeight(opt.description) + CARD_GAP_Y;
+      });
+      
+      // Nếu có khoảng trống giữa các lệnh (ví dụ sau pipe), có thể nới rộng cursorX một chút
+      cursorX += 10;
     });
 
     // 3. Set vào State
@@ -270,7 +294,7 @@ const ExplainResults = () => {
     setEdges(newEdges);
     setCanvasHeight(Math.max(600, cursorY + 80));
     
-  }, [explainData, setNodes, setEdges, navigate]); // Thêm dependencies
+  }, [explainData, setNodes, setEdges, navigate]); 
 
   return (
     <div className="explainPage">
@@ -280,7 +304,7 @@ const ExplainResults = () => {
         <div className="loadding" >
           <Spin size="large" tip={`Đang phân tích lệnh "${keyword}"...`} />
         </div>
-      ) : explainData && explainData.program ? (
+      ) : explainData && explainData.length > 0 ? (
         <div className="resultBox" style={{height: canvasHeight}}>
           <BorderBeam
             lineWidth={2.5}
@@ -334,7 +358,7 @@ const ExplainResults = () => {
       ) : (
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <Title level={3}>Ôi không! 😥</Title>
-          <p>Hệ thống của chúng tôi chưa có dữ liệu cho lệnh: <Text type="danger">"{keyword}"</Text></p>
+          <p>Hệ thống của chúng tôi chưa có dữ liệu cho lệnh này.</p>
           <p>Chúng tôi sẽ cố gắng cập nhật sớm nhất có thể!</p>
         </div>
       )}
@@ -342,4 +366,4 @@ const ExplainResults = () => {
   );
 };
 
-export default ExplainResults; 
+export default ExplainResults;

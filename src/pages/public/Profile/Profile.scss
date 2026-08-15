@@ -74,8 +74,8 @@
     }
 
     .history-command {
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-size: 1rem;
+      font-weight: 400;
       color: var(--text-primary);
       cursor: pointer;
       white-space: nowrap;
@@ -94,8 +94,12 @@
       max-width: 300px;
     }
 
+    .history-status{
+      margin-right: 10px;
+    }
+
     .history-time {
-      color: var(--text-muted);
+      color: gray;
       font-size: 0.85rem;
       white-space: nowrap;
       margin-left: auto; /* Đẩy thời gian sang bên phải sát nút Xóa */
