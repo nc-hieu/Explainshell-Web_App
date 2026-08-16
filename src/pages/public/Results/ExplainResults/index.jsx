@@ -42,7 +42,6 @@ function estimateCardHeight(html) {
 }
 
 // --- 1. CÁC NÚT TÙY CHỈNH ---
-
 // Token của dòng lệnh: chữ + gạch chân màu, giống cách explainShell highlight từng phần lệnh
 const CommandNode = ({ data }) => (
   <div
@@ -55,6 +54,7 @@ const CommandNode = ({ data }) => (
       position={Position.Bottom}
       className="commandNode__handle"
       style={{ background: data.color}}
+      className={`customPDots--${data.countDots}`}
     />
   </div>
 );
@@ -63,13 +63,34 @@ const CommandNode = ({ data }) => (
 const ExplanationNode = ({ data }) => (
   <div
     className="explanationNode"
-    style={{borderLeft: `5px solid ${data.color}`}}
+    style={{
+      borderLeft: `5px solid ${data.color}`,
+      borderRight: data.hasRightHandle ? `5px solid ${data.color}` : undefined,
+    }}
   >
+    {/* Handle trái — cho lần đầu */}
     <Handle
       type="target"
+      id="left"
       position={Position.Left}
-      style={{ background: data.color, border: 'none', width: 8, height: 8 }}
+      style={{ 
+        background: data.color, border: 'none', width: 8, height: 8 }}
     />
+    {/* Handle phải — cho lần lặp lại */}
+    <Handle
+      type="target"
+      id="right"
+      position={Position.Right}
+      style={{ 
+        display: !data.hasRightHandle && 'none',
+        background: data.color, 
+        border: 'none', 
+        width: 2, 
+        height: 2,
+      }}
+      className={`customEDots--${data.countDots}`}
+    />
+
     {typeof data.onViewDetail === 'function'? (
       <BorderBeam
         lineWidth={2}
@@ -87,7 +108,7 @@ const ExplanationNode = ({ data }) => (
             style={{background: data.color}}
             />
             <span className="explanationNode__cardHeader--titleName">
-            {data.title}
+              {data.title}
             </span>
           </div>
 
@@ -98,7 +119,7 @@ const ExplanationNode = ({ data }) => (
             type="link"
             onClick={data.onViewDetail}
             >
-                Xem chi tiết {data.onViewDetail}<ArrowRightOutlined />
+              Xem chi tiết {data.onViewDetail}<ArrowRightOutlined />
             </Button>
             </div>
           )}
@@ -114,6 +135,12 @@ const ExplanationNode = ({ data }) => (
             <span className="explanationNode__cardHeader--titleName">
               {data.title}
             </span>
+            {data.hasRightHandle && (
+              <span
+                className="explanationNode__cardHeader--titleDot"
+                style={{ background: data.color, marginLeft: 'auto' }}
+              />
+            )}
         </div>
 
         {typeof data.onViewDetail === 'function' && (
@@ -149,6 +176,7 @@ const ExplainResults = () => {
   const [explainData, setExplainData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locked, setLocked] = useState(true);
+  
 
   useEffect(() => {
     if (keyword) {
@@ -168,7 +196,7 @@ const ExplainResults = () => {
     }
   };
 
-// 1. Khai báo state quản lý nodes và edges
+  // 1. Khai báo state quản lý nodes và edges
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [canvasHeight, setCanvasHeight] = useState(600);
@@ -189,105 +217,154 @@ const ExplainResults = () => {
     let cursorX = 60;
     let cursorY = 200; 
     let colorIndex = 0; // Biến chạy màu liên tục cho tất cả các thành phần
+    let countExplantion = 1; // Dùng cho căn chỉnh dấu chấm (bên phải explantion) để tách đường kẻ
+    let countPrograms = 1; // Dùng cho căn chỉnh dấu chấm (bên dưới program) để tách đường kẻ
+    let countOptions = 1; // Dùng cho căn chỉnh dấu chấm (bên dưới option) để tách đường kẻ
+
+    // Map để theo dõi những program/option đã được tạo thẻ rồi
+    // key: "prog__{id}" hoặc "opt__{id}", value: { nodeId, color }
+    const seenMap = new Map();
+
+    //Hàm cập nhật hasRightHandle cho node đã tồn tại trong newNodes
+    const markRightHandle = (nodeId) => {
+      const node = newNodes.find(n => n.id === nodeId);
+      if (node) node.data = { ...node.data, hasRightHandle: true };
+    };
 
     // Lặp qua mảng các lệnh đã được Backend bóc tách (Ví dụ có Pipeline)
     explainData.forEach((cmdBlock, cmdIndex) => {
       const { program, matched_options } = cmdBlock;
       if (!program) return;
+      // countExplantion++;
 
-      const progColor = PALETTE[colorIndex % PALETTE.length];
-      colorIndex++;
-      
-      const mainLabel = program.name;
-      const mainWidth = measureTextWidth(mainLabel);
-      
-      // ID động có thêm cmdIndex để không trùng lặp khi nối chuỗi lệnh
-      const cmdProgId = `cmd-prog-${cmdIndex}-${program.id || 'new'}`;
-      const descProgId = `desc-prog-${cmdIndex}-${program.id || 'new'}`;
+      // ── PROGRAM ──────────────────────────────────────────
+      const progKey = `prog__${program.id || program.name}`;
 
-      // --- Command ---
-      newNodes.push({
-        id: cmdProgId,
-        type: 'command',
-        position: { x: cursorX, y: COMMAND_Y },
-        data: { label: mainLabel, color: progColor },
-        // XÓA: draggable: false
-      });
+      let progColor, descProgId, progCount;
 
-      newNodes.push({
-        id: descProgId,
-        type: 'explanation',
-        position: { x: CARD_X, y: cursorY },
-        data: {
-          title: mainLabel,
-          // Nếu is_found = false, hiển thị dòng mặc định
-          description: program.is_found ? program.description : '<p><em>Hệ thống chưa có mô tả cho lệnh này.</em></p>',
-          color: progColor,
-          // Chuyển hướng nếu tìm thấy lệnh
-          onViewDetail: program.is_found ? () => navigate(`/programs/${program.slug}`) : null,
-        },
-        // XÓA: draggable: false
-      });
-
-      newEdges.push({
-        id: `edge-prog-${cmdIndex}`,
-        source: cmdProgId,
-        target: descProgId,
-        type: 'default',
-        style: { stroke: progColor, strokeWidth: 2.5 },
-      });
-      // --- END Command ---
-
-      cursorX += mainWidth + TOKEN_GAP;
-      cursorY += estimateCardHeight(program.description) + CARD_GAP_Y;
-
-      // --- Option ---
-      matched_options?.forEach((opt, optIndex) => {
-        const color = PALETTE[colorIndex % PALETTE.length];
+      // const siblingEdgesCount = newEdges.filter(e => e.target === descProgId).length;
+      if (seenMap.has(progKey)) {
+        // Đã có thẻ giải thích → dùng lại màu + id cũ
+        ({ color: progColor, nodeId: descProgId, count: progCount } = seenMap.get(progKey));
+        markRightHandle(descProgId); // Đánh dấu cần handle phải
+      } else {
+        // Lần đầu gặp → tạo thẻ mới
+        progColor = PALETTE[colorIndex % PALETTE.length];
         colorIndex++;
-
-        // Sử dụng original_text theo API mới
-        const label = opt.original_text;
-        const width = measureTextWidth(label);
-        const cmdOptId = `cmd-opt-${cmdIndex}-${optIndex}`;
-        const descOptId = `desc-opt-${cmdIndex}-${optIndex}`;
-
+        descProgId = `desc-prog-${progKey}`;
+        progCount = countPrograms++;
+        
         newNodes.push({
-          id: cmdOptId,
-          type: 'command',
-          position: { x: cursorX, y: COMMAND_Y },
-          data: { label, color },
-          // XÓA: draggable: false
-        });
-
-        newNodes.push({
-          id: descOptId,
+          id: descProgId,
           type: 'explanation',
           position: { x: CARD_X, y: cursorY },
           data: {
-            title: opt.original_text,
-            // Xử lý khi cờ không tồn tại trong DB
-            description: opt.is_found ? opt.description : '<p><em>Chưa có dữ liệu cho cờ (option) này.</em></p>',
-            color,
+            title: program.name,
+            description: program.is_found
+              ? program.description
+              : '<p><em>Hệ thống chưa có dữ liệu cho lệnh này! 😥</em></p>',
+            color: progColor,
+            onViewDetail: program.is_found
+              ? () => navigate(`/programs/${program.slug}`)
+              : null,
+            countDots: countExplantion++,
           },
           // XÓA: draggable: false
         });
 
+        seenMap.set(progKey, { color: progColor, nodeId: descProgId, count: progCount });
+        cursorY += estimateCardHeight(program.description) + CARD_GAP_Y;
+      }
+
+      // Token lệnh chính (luôn tạo mới vì mỗi lần gõ là 1 token riêng)
+      const cmdProgId = `cmd-prog-${cmdIndex}-${program.id || 'new'}`;
+      newNodes.push({
+        id: cmdProgId,
+        type: 'command',
+        position: { x: cursorX, y: COMMAND_Y },
+        data: { label: program.name, color: progColor, countDots: progCount},
+        draggable: false,
+      });
+
+      // Đếm số token cùng trỏ tới desc này để chọn edge type
+      const siblingEdgesCount = newEdges.filter(e => e.target === descProgId).length;
+      newEdges.push({
+        id: `edge-prog-${cmdIndex}`,
+        source: cmdProgId,
+        target: descProgId,
+        // Từ 2 nguồn trở lên → smoothstep để gom thành hình Y
+        type: siblingEdgesCount >= 1 ? 'smoothstep' : 'default',
+        // type: 'smoothstep',
+        targetHandle: siblingEdgesCount >= 1 ? 'right' : 'left',
+        animated: siblingEdgesCount >= 1,
+        style: { stroke: progColor, strokeWidth: 2.5 },
+      });
+
+      cursorX += measureTextWidth(program.name) + TOKEN_GAP;
+      // ── END PROGRAM ──────────────────────────────────────────
+
+      countOptions = countPrograms + 1;
+      // ── OPTIONS ──────────────────────────────────────────────
+      matched_options?.forEach((opt, optIndex) => {
+        const optKey = `opt__${opt.id || opt.original_text}`;
+
+        let optColor, descOptId, optCount;
+
+        if (seenMap.has(optKey)) {
+          ({ color: optColor, nodeId: descOptId, count: optCount } = seenMap.get(optKey));
+          markRightHandle(descOptId); // Đánh dấu cần handle phải
+        } else {
+          optColor = PALETTE[colorIndex % PALETTE.length];
+          colorIndex++;
+          descOptId = `desc-opt-${optKey}`;
+          optCount = countOptions++; // Cấp số đếm mới cho Option
+
+          newNodes.push({
+            id: descOptId,
+            type: 'explanation',
+            position: { x: CARD_X, y: cursorY },
+            data: {
+              title: opt.original_text,
+              description: opt.is_found
+                ? opt.description
+                : '<p><em>Chưa có dữ liệu cho option này! 😥</em></p>',
+              color: optColor,
+              countDots: countExplantion++,
+            },
+            // XÓA: draggable: false
+          });
+
+          seenMap.set(optKey, { color: optColor, nodeId: descOptId, count: optCount });
+          cursorY += estimateCardHeight(opt.description) + CARD_GAP_Y;
+        }
+        
+        const cmdOptId = `cmd-opt-${cmdIndex}-${optIndex}`;
+        newNodes.push({
+          id: cmdOptId,
+          type: 'command',
+          position: { x: cursorX, y: COMMAND_Y },
+          data: { label: opt.original_text, color: optColor, countDots: optCount },
+        });
+
+        const siblingOptEdgesCount = newEdges.filter(e => e.target === descOptId).length;
         newEdges.push({
           id: `edge-opt-${cmdIndex}-${optIndex}`,
           source: cmdOptId,
           target: descOptId,
-          type: 'default',
-          style: { stroke: color, strokeWidth: 2.5 },
+          type: siblingOptEdgesCount >= 1 ? 'smoothstep' : 'default',
+          // type: 'smoothstep',
+          targetHandle: siblingOptEdgesCount >= 1 ? 'right' : 'left',
+          animated: siblingOptEdgesCount >= 1,
+          style: { stroke: optColor, strokeWidth: 2 },
         });
 
-        cursorX += width + TOKEN_GAP;
-        cursorY += estimateCardHeight(opt.description) + CARD_GAP_Y;
+        cursorX += measureTextWidth(opt.original_text) + TOKEN_GAP;
       });
       
       // Nếu có khoảng trống giữa các lệnh (ví dụ sau pipe), có thể nới rộng cursorX một chút
-      cursorX += 10;
+      cursorX += 15;
     });
+  
 
     // 3. Set vào State
     setNodes(newNodes);

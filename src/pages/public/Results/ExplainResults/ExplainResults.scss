@@ -79,6 +79,19 @@
                 }
             }
         }
+
+        // Khi có border phải, chấm màu phải cần căn đúng vị trí
+        &__cardHeader {
+            &--title {
+            // Đảm bảo flex stretch full width để chấm phải ra tận mép
+            width: 100%;
+            }
+
+            &--titleDot {
+            flex-shrink: 0;
+            // Chấm phải dùng marginLeft: auto từ inline style để đẩy ra sát phải
+            }
+        }
     }
 
     .button__lock{
@@ -120,5 +133,25 @@
         font-size: 14px;
         line-height: 1.6;
         // color: #3a3f4b;
+    }
+
+    @for $i from 1 through 20{
+        .customEDots--#{$i}{
+            padding-right: $i * 25px;
+            // margin-left: $i * 10px;
+            border-radius: 10px;
+            z-index: -99;
+        }
+
+        .customPDots--#{$i}{
+            padding-bottom: $i * 1.5 * 6px;
+            // margin-bottom: $i * 10px;
+            border-radius: 10px;
+            z-index: -99;
+            border: none;
+            width: 1px;
+            height: 1px;
+            bottom: -6px * $i;
+        }
     }
 }
