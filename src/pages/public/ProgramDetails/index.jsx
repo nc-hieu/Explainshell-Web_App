@@ -195,7 +195,7 @@ const ProgramDetails = () => {
           <br />
           {/* ========Description======== */}
 
-          <ExamplesSection examplesList={generalExamples} title="Ví Dụ" />
+          <ExamplesSection examplesList={generalExamples} title="Examples" />
         </Card>
       </BorderBeam>
 
@@ -211,9 +211,9 @@ const ProgramDetails = () => {
         </div>
       )}
 
-      {(!programData.options || programData.options.length === 0) && (
+      {/* {(!programData.options || programData.options.length === 0) && (
         <Empty description="Lệnh này chưa được cập nhật Options!" />
-      )}
+      )} */}
 
       {/* 3. HIỂN THỊ THEO TỪNG NHÓM (OPTION GROUPS) */}
       {programData.option_groups?.map(group => {

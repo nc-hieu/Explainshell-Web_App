@@ -22,7 +22,7 @@ const NotesSection = ({ notes }) => {
               <Card size="small" className="notes-card">
                 <Space className="notes-tags-wrapper" wrap>
                   {note.title && (
-                    <Tag color="purple" variant="outlined" className="notes-tag">
+                    <Tag color="volcano" variant="outlined" className="notes-tag">
                       {note.title}
                     </Tag>
                   )}

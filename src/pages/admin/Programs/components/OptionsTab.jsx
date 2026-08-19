@@ -66,6 +66,7 @@ const OptionsTab = ({ editingProgram }) => {
       formOption.setFieldsValue({
         is_featured: false,
         is_deprecated: false,
+        takes_value: false,
         group_id: null
       });
     }
@@ -91,6 +92,7 @@ const OptionsTab = ({ editingProgram }) => {
         description: values.description || "",
         is_deprecated: values.is_deprecated || false,
         is_featured: values.is_featured || false,
+        takes_value: values.takes_value || false,
         group_id: values.group_id || null  // Nếu không chọn nhóm, gửi null lên Backend
       };
 
@@ -155,6 +157,11 @@ const OptionsTab = ({ editingProgram }) => {
             {r.is_deprecated && <Tag color="red">Đã cũ</Tag>}
           </Space>
       )
+    },
+    {
+      title: 'Nhận giá trị',
+      width: '15%',
+      render: (_, r) => r.takes_value ? <Tag color="blue">Có</Tag> : <Tag color="default">Không</Tag>
     },
     {
       title: 'Hành động',
@@ -225,12 +232,16 @@ const OptionsTab = ({ editingProgram }) => {
           </Form.Item>
 
           <div style={{ display: 'flex', gap: '24px', padding: '12px', borderRadius: '8px', marginBottom: '24px' }}>
+            <Form.Item name="takes_value" valuePropName="checked" style={{ marginBottom: 0 }}>
+              <Switch checkedChildren="Cần giá trị" unCheckedChildren="Không cần giá trị" />
+            </Form.Item>
+
             <Form.Item name="is_featured" valuePropName="checked" style={{ marginBottom: 0 }}>
               <Switch checkedChildren="Nổi bật" unCheckedChildren="Bình thường" />
             </Form.Item>
             
             <Form.Item name="is_deprecated" valuePropName="checked" style={{ marginBottom: 0 }}>
-              <Switch checkedChildren="Đã cũ (Bỏ mẫu)" unCheckedChildren="Đang dùng" />
+              <Switch checkedChildren="Lỗi Thời" unCheckedChildren="Tiêu Chuẩn" />
             </Form.Item>
           </div>
 

@@ -1,0 +1,62 @@
+.admin-dashboard {
+  .dashboard-title {
+    color: var(--color-primary, #fbbf24);
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+
+  .stat-card {
+    height: 100%;
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    .ant-statistic-title {
+      color: var(--text-secondary, #9ca3af);
+      font-size: 14px;
+    }
+
+    .ant-statistic-content {
+      color: var(--text-primary, #f3f4f6);
+      font-size: 28px;
+      font-weight: 700;
+    }
+  }
+
+  .chart-card {
+    border-radius: 12px;
+    height: 100%;
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+
+      h4 {
+        margin: 0;
+        color: var(--text-primary, #f3f4f6);
+      }
+    }
+  }
+
+  .dashboard-table-card {
+    border-radius: 12px;
+    margin-top: 24px;
+
+    h4 {
+      margin-bottom: 16px;
+      color: var(--text-primary, #f3f4f6);
+    }
+  }
+
+  .quick-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}

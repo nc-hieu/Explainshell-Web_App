@@ -13,6 +13,32 @@ export const historyService = {
     return response.data;
   },
 
+  // ==========================================
+  // ADMIN APIs
+  // ==========================================
+
+  // Lấy toàn bộ lịch sử của hệ thống (Admin)
+  getAllAdmin: async (skip = 0, limit = 100) => {
+    const response = await api.get(`/histories/?skip=${skip}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Lấy danh sách histories theo status (Admin)
+  getByStatus: async (status, params = {}) => {
+    const queryParams = new URLSearchParams({ status, ...params });
+    const response = await api.get(`/histories/by-status?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  // Lấy thống kê tổng số theo status (Admin)
+  getStatusSummary: async (fromDate = null, toDate = null) => {
+    const queryParams = new URLSearchParams();
+    if (fromDate) queryParams.append('from_date', fromDate);
+    if (toDate) queryParams.append('to_date', toDate);
+    const queryString = queryParams.toString();
+    const response = await api.get(`/histories/status-summary${queryString ? `?${queryString}` : ''}`);
+    return response.data;
+  },
 
   // Thêm một lịch sử mới
   create: async (data) => {
@@ -21,7 +47,7 @@ export const historyService = {
     return response.data;
   },
 
-  // (Tùy chọn) Xóa một lịch sử nếu 
+  // (Tùy chọn) Xóa một lịch sử nếu
   delete: async (id) => {
     const response = await api.delete(`/histories/${id}`);
     return response.data;
