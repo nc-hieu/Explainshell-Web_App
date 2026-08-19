@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Spin, Typography, Button, BorderBeam } from 'antd';
 import { LockOutlined, UnlockOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { programService } from '../../../../services/program.service';
+import { historyService } from '../../../../services/history.service';
+import { useAuthStore } from '../../../../store/authStore';
 import LiveSearchBar from '../../../../components/common/LiveSearchBar';
 import DOMPurify from 'dompurify';
 import { ReactFlow, Background, Controls, 
@@ -168,11 +170,16 @@ const nodeTypes = {
   explanation: ExplanationNode,
 };
 
+// Module-level guard để tránh lưu history 2 lần do React StrictMode mount/unmount/remount
+const recentSavedCommands = new Map();
+const SAVE_DEDUP_MS = 5000;
+
 // --- 2. COMPONENT CHÍNH ---
 const ExplainResults = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get('q') || '';
+  const { token } = useAuthStore();
   const [explainData, setExplainData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locked, setLocked] = useState(true);
@@ -184,11 +191,42 @@ const ExplainResults = () => {
     }
   }, [keyword]);
 
+  const saveSearchHistory = async (data) => {
+    if (!token || !data || !Array.isArray(data) || data.length === 0) return;
+
+    // Chống lưu trùng lặp do StrictMode mount/unmount/remount trong development
+    const dedupKey = `${token}-${keyword}`;
+    const lastSaved = recentSavedCommands.get(dedupKey);
+    const now = Date.now();
+    if (lastSaved && now - lastSaved < SAVE_DEDUP_MS) return;
+    recentSavedCommands.set(dedupKey, now);
+
+    const totalCommands = data.length;
+    const foundIds = data
+      .filter(item => item.program?.is_found && item.program?.id)
+      .map(item => item.program.id);
+
+    let status = 'NOT_FOUND';
+    if (foundIds.length === totalCommands) status = 'FOUND';
+    else if (foundIds.length > 0) status = 'PARTIAL';
+
+    try {
+      await historyService.create({
+        command_text: keyword,
+        status,
+        program_ids: foundIds
+      });
+    } catch (err) {
+      console.error('Lỗi lưu lịch sử:', err);
+    }
+  };
+
   const fetchCommandExplanation = async () => {
     setLoading(true);
     try {
       const data = await programService.explain(keyword);
       setExplainData(data);
+      await saveSearchHistory(data);
     } catch (error) {
       setExplainData(null);
     } finally {
