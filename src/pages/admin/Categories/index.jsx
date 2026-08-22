@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, TreeSelect, Upload, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { generateSlug, getImageUrl, getFileName } from '../../../utils/helpers';
@@ -7,10 +7,17 @@ import { uploadService } from '../../../services/upload.service';
 import { topicService } from '../../../services/topic.service';
 
 const Categories = () => {
-  const [categories, setCategories] = useState([]); 
   const [rawCategories, setRawCategories] = useState([]); 
   const [topicsList, setTopicsList] = useState([]); 
   const [loading, setLoading] = useState(false);
+
+  // State quản lý phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // State quản lý tìm kiếm và bộ lọc
+  const [searchText, setSearchText] = useState('');
+  const [filterTopicId, setFilterTopicId] = useState(null);
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -36,13 +43,9 @@ const Categories = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const data = await categoryService.getAll(0, 100);
+      const data = await categoryService.getAll(0, 500);
       const items = Array.isArray(data) ? data : data.items || [];
-      
       setRawCategories(items); 
-      
-      const treeData = buildTree(items);
-      setCategories(treeData);
     } catch (error) {
       message.error('Không thể tải danh sách danh mục!');
     } finally {
@@ -70,9 +73,9 @@ const Categories = () => {
 
     const cleanEmptyChildren = (nodes) => {
       nodes.forEach(node => {
-        if (node.children.length === 0) {
+        if (node.children && node.children.length === 0) {
           delete node.children;
-        } else {
+        } else if (node.children) {
           cleanEmptyChildren(node.children);
         }
       });
@@ -81,6 +84,52 @@ const Categories = () => {
 
     return tree;
   };
+
+  // Cây danh mục đầy đủ cho Modal chọn danh mục cha
+  const fullCategoriesTree = useMemo(() => {
+    return buildTree(rawCategories);
+  }, [rawCategories]);
+
+  // Cây danh mục hiển thị trên bảng sau khi lọc Topic và Search
+  const displayedCategories = useMemo(() => {
+    let filtered = rawCategories;
+
+    // 1. Lọc theo Topic
+    if (filterTopicId) {
+      filtered = filtered.filter(item => item.topic_id === filterTopicId);
+    }
+
+    // 2. Lọc theo từ khóa tìm kiếm
+    if (searchText.trim()) {
+      const lower = searchText.toLowerCase().trim();
+      const matchingIds = new Set();
+      filtered.forEach(item => {
+        if (
+          item.name?.toLowerCase().includes(lower) ||
+          item.slug?.toLowerCase().includes(lower) ||
+          item.description?.toLowerCase().includes(lower)
+        ) {
+          matchingIds.add(item.id);
+        }
+      });
+
+      // Lấy toàn bộ danh mục cha để giữ cấu trúc cây
+      const includeIds = new Set(matchingIds);
+      filtered.forEach(item => {
+        if (matchingIds.has(item.id)) {
+          let curr = item;
+          while (curr && curr.parent_id) {
+            includeIds.add(curr.parent_id);
+            curr = rawCategories.find(c => c.id === curr.parent_id);
+          }
+        }
+      });
+
+      filtered = filtered.filter(item => includeIds.has(item.id));
+    }
+
+    return buildTree(filtered);
+  }, [rawCategories, filterTopicId, searchText]);
 
   // --- MỚI: HÀM XỬ LÝ TẠO SLUG THÔNG MINH ---
   // Kết hợp tên Topic và tên Danh mục để tạo Slug
@@ -279,14 +328,73 @@ const Categories = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2 style={{color: 'var(--color-primary, #fbbf24)'}}>Quản lý Danh mục (Categories)</h2>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-          Thêm danh mục
-        </Button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ color: 'var(--color-primary, #fbbf24)', margin: 0 }}>Quản lý Danh mục (Categories)</h2>
+
+        <Space wrap>
+          <Select
+            style={{ width: 220 }}
+            placeholder="Lọc theo Topic..."
+            allowClear
+            showSearch
+            optionFilterProp="children"
+            value={filterTopicId}
+            onChange={(value) => {
+              setFilterTopicId(value || null);
+              setCurrentPage(1);
+            }}
+          >
+            {topicsList.map(topic => (
+              <Select.Option key={topic.id} value={topic.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {topic.icon_url && (
+                    <img
+                      src={getImageUrl(topic.icon_url)}
+                      alt="icon"
+                      style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                    />
+                  )}
+                  <span>{topic.name}</span>
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
+
+          <Input.Search
+            placeholder="Tìm kiếm tên, slug, mô tả..."
+            allowClear
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ width: 280 }}
+          />
+
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+            Thêm danh mục
+          </Button>
+        </Space>
       </div>
 
-      <Table columns={columns} dataSource={categories} loading={loading} pagination={false} />
+      <Table
+        columns={columns}
+        dataSource={displayedCategories}
+        loading={loading}
+        rowKey="id"
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: displayedCategories.length,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} danh mục gốc`,
+          onChange: (page, newPageSize) => {
+            setCurrentPage(page);
+            setPageSize(newPageSize);
+          }
+        }}
+      />
 
       <Modal
         title={editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
@@ -323,7 +431,7 @@ const Categories = () => {
             <TreeSelect
               style={{ width: '100%' }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              treeData={categories}
+              treeData={fullCategoriesTree}
               placeholder="Chọn danh mục cha (tùy chọn)"
               treeDefaultExpandAll
               allowClear
