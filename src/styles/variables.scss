@@ -6,19 +6,19 @@
 /* 1. KHAI BÁO BIẾN THEO CHẾ ĐỘ SÁNG/TỐI */
 :root {
   // --- LIGHT MODE (Tông sáng, nền trắng/xám nhạt) ---
-  --bg-main: #f3f4f6;       // Xám nhạt cho nền toàn trang
-  --bg-card: #ffffff;       // Trắng tinh cho thẻ/khối
-  --bg-header: #ffffff;     // Trắng cho header
-  --bg-sider: #ffffff;      // Trắng cho sidebar
-  --bg-hover: #f9fafb;      // Màu hover xám rất nhẹ
-  
-  --text-primary: #111827;  // Chữ chính (Đen xám)
-  --text-secondary: #6b7280;// Chữ phụ (Xám vừa)
-  --border-color: #e5e7eb;  // Viền xám nhạt
-  --code-color: #f6f8fa;  // Viền xám nhạt
+  --bg-main: #f3f4f6; // Xám nhạt cho nền toàn trang
+  --bg-card: #ffffff; // Trắng tinh cho thẻ/khối
+  --bg-header: #ffffff; // Trắng cho header
+  --bg-sider: #ffffff; // Trắng cho sidebar
+  --bg-hover: #f9fafb; // Màu hover xám rất nhẹ
+
+  --text-primary: #111827; // Chữ chính (Đen xám)
+  --text-secondary: #6b7280; // Chữ phụ (Xám vừa)
+  --border-color: #e5e7eb; // Viền xám nhạt
+  --code-color: #f6f8fa; // Viền xám nhạt
 
   // --color-primary: #fbbf24; // Màu Vàng Cam chủ đạo (Giữ nguyên để nhận diện thương hiệu)
-//   --color-primary: #f9a115;
+  //   --color-primary: #f9a115;
   // --color-primary: #14b8a6;
   --color-primary: #0d9488;
 
@@ -26,16 +26,16 @@
 
 [data-theme='dark'] {
   // --- DARK MODE (Tông tối, phân tích từ ảnh của bạn) ---
-  --bg-main: #161a24;       // Đen ánh xanh
-  --bg-card: #1c1e26;       // Đen sáng hơn cho thẻ
-  --bg-header: #070b15;     // Đen sậm cho header
-  --bg-sider: #111319;      // Đen cho sidebar
-  --bg-hover: #252836;      // Nền khi hover
-  
-  --text-primary: #ffffff;  // Chữ trắng
-  --text-secondary: #9ca3af;// Chữ xám nhạt
-  --border-color: #2d313f;  // Viền tối
-  --code-color: #030303;  // Viền tối
+  --bg-main: #161a24; // Đen ánh xanh
+  --bg-card: #1c1e26; // Đen sáng hơn cho thẻ
+  --bg-header: #070b15; // Đen sậm cho header
+  --bg-sider: #111319; // Đen cho sidebar
+  --bg-hover: #252836; // Nền khi hover
+
+  --text-primary: #ffffff; // Chữ trắng
+  --text-secondary: #9ca3af; // Chữ xám nhạt
+  --border-color: #2d313f; // Viền tối
+  --code-color: #030303; // Viền tối
 
   --color-primary: #fbbf24; // Màu Vàng Cam chủ đạo
 }
@@ -73,15 +73,27 @@ body {
     margin-bottom: 0.75rem;
   }
 
-  ul, ol {
+  ul,
+  ol {
     padding-left: 24px;
     margin-bottom: 1rem;
   }
 
-  em { font-style: italic; }
-  u { text-decoration: underline; }
-  s { text-decoration: line-through; }
-  strong { font-weight: bold; }
+  em {
+    font-style: italic;
+  }
+
+  u {
+    text-decoration: underline;
+  }
+
+  s {
+    text-decoration: line-through;
+  }
+
+  strong {
+    font-weight: bold;
+  }
 
   /* ĐỊNH DẠNG KHỐI MÃ (CODE BLOCK) */
   pre {
@@ -99,6 +111,7 @@ body {
     &::-webkit-scrollbar {
       height: 6px;
     }
+
     &::-webkit-scrollbar-thumb {
       background: color-mix(in srgb, var(--text-primary) 25%, transparent);
       border-radius: 4px;
@@ -112,10 +125,11 @@ body {
       border: none;
       font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', Courier, monospace;
       font-size: 0.85rem;
-      line-height: 1.55;
+      // line-height: 1.55;
       white-space: pre;
       word-break: normal;
       font-variant-ligatures: none;
+      font-weight: 400;
 
       ::selection {
         background: color-mix(in srgb, var(--color-primary) 30%, transparent);
@@ -130,7 +144,9 @@ body {
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', Courier, monospace;
-    font-size: 0.85em; /* dùng em để tự co giãn theo chữ cha */
+    font-size: 0.85em;
+    /* dùng em để tự co giãn theo chữ cha */
+    font-weight: bold;
     white-space: nowrap;
   }
 

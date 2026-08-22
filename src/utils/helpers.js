@@ -60,3 +60,44 @@ export const hasRichTextContent = (htmlOrText) => {
   const textOnly = htmlOrText.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
   return textOnly.length > 0;
 };
+
+/**
+ * Sao chép văn bản vào bộ nhớ tạm (hỗ trợ cả Clipboard API và fallback execCommand cho HTTP / Mobile)
+ * @param {string} text - Đoạn text cần sao chép
+ * @returns {Promise<boolean>} - Trả về true nếu thành công, false nếu thất bại
+ */
+export const copyToClipboard = async (text) => {
+  if (!text || typeof text !== 'string') return false;
+
+  // 1. Thử dùng Clipboard API hiện đại
+  if (navigator?.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      console.warn('Clipboard API không khả dụng hoặc bị chặn quyền, dùng fallback:', err);
+    }
+  }
+
+  // 2. Fallback dùng textarea + document.execCommand cho HTTP / Mobile / Trình duyệt chặn quyền
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '0';
+    textArea.style.opacity = '0';
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, 99999); // Dành cho iOS
+
+    const success = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return success;
+  } catch (err) {
+    console.error('Fallback copy thất bại:', err);
+    return false;
+  }
+};

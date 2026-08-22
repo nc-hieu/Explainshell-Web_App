@@ -4,32 +4,30 @@
 // ==========================================
 @import '../../../styles/variables.scss';
 
-
 .explain-container {
   width: 100%;
-  max-width: 1050px; // Giới hạn độ rộng để người dùng dễ đọc (không bị tràn viền màn hình to)
+  max-width: 1000px; // Độ rộng tối ưu giúp người dùng quan sát trọn vẹn
   margin: 0 auto;
-  padding: 20px;
+  padding: 16px 20px 48px;
   text-align: left;
 
   /* Nút quay lại ở đầu trang */
   .back-btn {
     padding-left: 0;
-    margin-bottom: 20px;
-    // color: var(--color-primary);
+    margin-bottom: 16px;
   }
 
-  .search-bar{
-    margin-bottom: 25px;
+  .search-bar {
+    margin-bottom: 20px;
   }
 
   /* Màn hình chờ (Loading) và Lỗi (Error) */
   .status-container {
     text-align: center;
-    padding: 100px;
+    padding: 80px;
 
     &.error {
-      padding: 50px;
+      padding: 40px;
     }
   }
 
@@ -38,118 +36,328 @@
      ======================================== */
   .program-card {
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); // Đổ bóng nhẹ cho Card
-    border-left: 6px solid $color-primary; // Viền xanh dương đặc trưng ở cạnh trái
-    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid $color-primary;
+    margin-bottom: 24px;
 
-    .pc-space-left, .pc-space-right{
+    .ant-card-head {
+      padding: 0 16px;
+      min-height: 48px;
+    }
+
+    .ant-card-body {
+      padding: 16px;
+    }
+
+    .pc-space-left {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
+      gap: 8px;
+    }
+
+    .pc-space-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .manpage-dropdown-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .manpage-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+
+      .manpage-btn-text {
+        display: inline;
+      }
+
+      .manpage-btn-arrow {
+        font-size: 10px;
+      }
+
+      @media (max-width: 768px) {
+        padding: 4px 8px;
+        min-width: 32px;
+        justify-content: center;
+
+        .manpage-btn-text {
+          display: none;
+        }
+
+        .manpage-btn-arrow {
+          display: none;
+        }
+      }
     }
 
     .program-title {
+      font-size: 1.35rem;
+      font-weight: 700;
       margin-bottom: 0;
       color: $color-primary;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
     }
 
-    .program-favorite-btn{
-      margin-left: 10px;
+    .program-action-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .category-tags-wrapper {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+
+      .ant-tag {
+        font-size: 0.75rem;
+        padding: 1px 8px;
+        border-radius: 4px;
+      }
     }
   }
 
-  /* Text mô tả chung dùng cho cả Program và Group */
+  /* Text mô tả chung của Program */
   .description-text {
-    font-size: 1rem;
-    white-space: pre-wrap; // Cực kỳ quan trọng: Giữ nguyên dấu \n từ Database để hiển thị xuống dòng
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    white-space: pre-wrap;
   }
 
   /* ========================================
      PHẦN 2: COMPONENT VÍ DỤ (EXAMPLES)
      ======================================== */
   .example-box {
-    margin-top: 12px;
-    padding: 12px;
-    background-color: $bg-main; // Nền xám nhạt để tách biệt với mô tả
+    margin-top: 10px;
+    padding: 10px 12px;
+    // background-color: var(--bg-main, rgba(128, 128, 128, 0.05));
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.15));
     border-radius: 6px;
-    // border-left: 4px solid #d9d9d9; // Viền xám đậm bên trái
 
-    .example-title {
-      display: block;
+    .example-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       margin-bottom: 8px;
-      font-size: 1.1rem;
-      color: $color-primary;
+
+      .example-header-icon {
+        color: $color-primary;
+        font-size: 0.85rem;
+      }
+
+      .example-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $color-primary;
+        font-weight: 600;
+      }
     }
 
-    .example-cmd-tag {
-      font-size: 1rem;
-      padding: 2px 8px;
-      margin-bottom: 4px;
+    .example-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .example-decs {
-      font-size: 0.8rem;
-      padding: 2px 8px;
-      margin-bottom: 4px;
+
+    .example-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+
+      .example-divider {
+        height: 1px;
+        background: var(--border-color, rgba(128, 128, 128, 0.15));
+        margin: 4px 0 6px;
+      }
+
+      .example-cmd-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        // background: rgba(128, 128, 128, 0.08);
+        background-color: var(--bg-main, rgba(128, 128, 128, 0.05));
+        border: 1px solid var(--border-color, rgba(128, 128, 128, 0.15));
+        border-radius: 4px;
+        padding: 3px 8px;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+
+        &:hover {
+          border-color: $color-primary;
+          background: rgba(128, 128, 128, 0.12);
+        }
+
+        .example-cmd-code {
+          background: transparent;
+          font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+          font-size: 0.85rem;
+          color: var(--text-primary);
+          word-break: break-all;
+          user-select: all;
+          font-weight: 500;
+        }
+
+        .example-copy-btn {
+          color: var(--text-secondary);
+          opacity: 0.75;
+          transition: all 0.2s ease;
+
+          &:hover {
+            opacity: 1;
+            color: $color-primary;
+            background: rgba(128, 128, 128, 0.1);
+          }
+        }
+      }
+
+      .example-desc-wrapper {
+        // padding: 0 5px;
+
+        .example-desc {
+          font-size: 0.825rem;
+          line-height: 1.5;
+          color: var(--text-secondary);
+          margin: 0;
+        }
+      }
     }
   }
 
   /* ========================================
-     PHẦN 3: NHÓM CỜ (OPTION GROUPS)
+     PHẦN 3: NHÓM CỜ (OPTION GROUPS) & NOTES
      ======================================== */
-  .group-section, .notes-section {
-    margin-top: 50px;
+  .group-section,
+  .notes-section {
+    margin-top: 32px;
 
     .group-title {
-      // color: #595959;
-      border-bottom: 2px solid #e8e8e8; // Đường kẻ gạch dưới tên nhóm
-      padding: 10px;
-      padding-bottom: 8px;
-      // position: relative;
+      font-size: 1.1rem !important;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+      padding: 0 0 6px 0;
+      margin-bottom: 12px;
+      color: var(--text-primary);
     }
 
     .group-desc {
-      font-size: 0.9rem;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
       white-space: pre-wrap;
     }
 
     .group-options-wrapper {
-      margin-top: 16px;
-      // padding-left: 16px; // Thụt lề vào một chút để thấy cấp bậc cha-con
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
   }
-  
 
   /* ========================================
      PHẦN 4: CỜ LỆNH (OPTIONS CARD)
      ======================================== */
-  .option-card, .notes-card {
-    margin-bottom: 16px;
-    border-left: 5px solid $color-primary; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  .option-card {
+    border-left: 4px solid $color-primary;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     border-radius: 6px;
+    transition: all 0.2s ease;
 
-    .option-tags-wrapper, .notes-tags-wrapper{
-      margin-bottom: 8px;
+    .ant-card-body {
+      padding: 12px 14px;
     }
 
-    .notes-tags-wrapper{
-      // margin-top: 8px;
+    .option-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .option-tags-left {
+        .option-tag {
+          font-family: 'JetBrains Mono', 'Fira Code', monospace;
+          font-size: 0.85rem;
+          font-weight: 600;
+          padding: 1px 8px;
+          border-radius: 4px;
+        }
+
+        .takes-val-tag {
+          font-family: monospace;
+          font-size: 0.75rem;
+          padding: 0 6px;
+          border-radius: 3px;
+        }
+      }
+
+      .option-status-right {
+        .status-tag {
+          font-size: 0.75rem;
+          padding: 0 8px;
+          border-radius: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+        }
+
+        .featured-tag {
+          font-weight: 500;
+        }
+
+        .deprecated-tag {
+          opacity: 0.7;
+        }
+      }
     }
 
-    .option-tag, .notes-tag {
-      font-size: 1rem;
-      padding: 5px 10px;
-    }
-
-    .option-desc, .notes-desc {
-      font-size: 0.9rem;
-      white-space: pre-wrap;
+    .option-desc {
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--text-primary);
       margin: 0;
+      white-space: pre-wrap;
+    }
+  }
+
+  /* ========================================
+     PHẦN 5: GHI CHÚ (NOTES CARD)
+     ======================================== */
+  .notes-card {
+    border-left: 4px solid #f97316;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    border-radius: 6px;
+    margin-bottom: 10px;
+
+    .ant-card-body {
+      padding: 12px 14px;
+    }
+
+    .notes-tags-wrapper {
+      margin-bottom: 6px;
+
+      .notes-tag {
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 4px;
+      }
+    }
+
+    .notes-desc {
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--text-primary);
+      margin: 0;
+      white-space: pre-wrap;
     }
   }
 }
-

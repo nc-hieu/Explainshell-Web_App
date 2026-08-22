@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Typography, Card, Spin, Space, Tag, Button, Empty, Dropdown, message } from 'antd';
-import { ArrowLeftOutlined, BookOutlined, DownOutlined } from '@ant-design/icons';
+import { Typography, Card, Spin, Space, Tag, Button, Empty, Dropdown, message, Tooltip } from 'antd';
+import { ArrowLeftOutlined, BookOutlined, DownOutlined, ReadOutlined } from '@ant-design/icons';
 import { BorderBeam } from 'antd';
 import DOMPurify from 'dompurify';
 
@@ -14,8 +14,9 @@ import { useAuthStore } from '../../../store/authStore';
 // Import Component dùng chung
 import LiveSearchBar from '../../../components/common/LiveSearchBar';
 import FavoriteButton from '../../../components/common/FavoriteButton';
-import { getImageUrl } from '../../../utils/helpers'; 
-import './ProgramDetails.scss'; 
+import ShareButton from '../../../components/common/ShareButton';
+import { getImageUrl } from '../../../utils/helpers';
+import './ProgramDetails.scss';
 
 // Import các Component con 
 import ExamplesSection from './ExamplesSection';
@@ -26,7 +27,7 @@ const { Title, Text, Paragraph } = Typography;
 
 const ProgramDetails = () => {
   const { token } = useAuthStore();
-  const { program_slug } = useParams(); 
+  const { program_slug } = useParams();
   const navigate = useNavigate();
 
   const savedSlugRef = useRef(null);
@@ -34,7 +35,7 @@ const ProgramDetails = () => {
   const [loading, setLoading] = useState(false);
   const [programData, setProgramData] = useState(null);
   const [notes, setNotes] = useState([]);
-  
+
   useEffect(() => {
     if (program_slug) {
       fetchCommandExplanation(program_slug);
@@ -49,11 +50,11 @@ const ProgramDetails = () => {
       setProgramData(data);
 
       if (data && token && savedSlugRef.current !== data.program_slug) {
-        savedSlugRef.current = data.program_slug; 
+        savedSlugRef.current = data.program_slug;
         historyService.create({
           command_text: data.program_slug || data.name,
-          explanation: data.description 
-        }).catch(err => console.error("Lỗi lưu lịch sử ngầm:", err)); 
+          explanation: data.description
+        }).catch(err => console.error("Lỗi lưu lịch sử ngầm:", err));
       }
 
       if (data?.id) {
@@ -61,25 +62,25 @@ const ProgramDetails = () => {
         setNotes(Array.isArray(notesData) ? notesData : []);
       }
     } catch (error) {
-      setProgramData(null); 
+      setProgramData(null);
     } finally {
       setLoading(false);
     }
   };
   //=== END Fetch Data - Program ===
-  
+
 
   //=== Logic ManPages ===
   const manPagesData = programData?.man_pages || [];
   const items = manPagesData.map((manpage, index) => ({
     // label: manpage.os?.name || 'Unknown OS',
-    label: 
+    label:
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {manpage.os?.icon_url && (
-          <img 
-            src={getImageUrl(manpage.os?.icon_url)} 
-            alt="icon" 
-            style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+          <img
+            src={getImageUrl(manpage.os?.icon_url)}
+            alt="icon"
+            style={{ width: '20px', height: '20px', objectFit: 'contain' }}
           />)}
         <span>{manpage.os?.name || 'Unknown OS'}</span>
       </div>,
@@ -111,7 +112,7 @@ const ProgramDetails = () => {
     );
   }
   //=== END Loading Page ===
- 
+
 
   //=== Logic khi không tìm thấy dữ Program ===
   if (!programData) {
@@ -132,12 +133,12 @@ const ProgramDetails = () => {
   return (
     <div className="explain-container">
       <div className="search-bar" >
-          <LiveSearchBar size="large" className="custom-search-bar" initialValue={programData.name} />
+        <LiveSearchBar size="large" className="custom-search-bar" initialValue={programData.name} />
       </div>
-      
-      {/* 1. THÔNG TIN LỆNH CHUNG */}    
-      <BorderBeam 
-        lineWidth={2} 
+
+      {/* 1. THÔNG TIN LỆNH CHUNG */}
+      <BorderBeam
+        lineWidth={2}
         size={250}
         color={[
           { color: '#22c55e', percent: 0 },
@@ -145,26 +146,37 @@ const ProgramDetails = () => {
           { color: '#facc15', percent: 100 },
         ]}
       >
-        <Card 
+        <Card
           className="program-card"
           title={
             <div className="pc-space-left">
-              <Space>
-                <BookOutlined style={{ color: 'var(--color-primary)' , fontSize: '28px' }} />
+              <Space align="center" size={8}>
+                <BookOutlined style={{ color: 'var(--color-primary)', fontSize: '24px' }} />
                 <Title level={2} className="program-title" style={{ margin: 0 }}>{programData.name}</Title>
+                {programData.is_bsd_style && (
+                  <Tooltip title="Lệnh hỗ trợ cú pháp BSD: gom cờ không cần dấu gạch ngang (VD: ps aux, tar zcf)">
+                    <Tag color="orange" style={{ margin: 0, fontSize: '0.75rem', borderRadius: '4px' }}>BSD Style</Tag>
+                  </Tooltip>
+                )}
               </Space>
 
               <div className="pc-space-right">
-                <div>
-                  <Dropdown menu={manPageProps} placement="bottomRight">
-                    <Button icon={<DownOutlined />} iconPlacement="end" >
-                      ManPages
-                    </Button>
-                  </Dropdown>
-                </div>
-                
-                {/* GẮN NÚT YÊU THÍCH VÀO GÓC PHẢI THẺ CARD */}
-                <div className="program-favorite-btn">
+                {manPagesData.length > 0 && (
+                  <div className="manpage-dropdown-container">
+                    <Dropdown menu={manPageProps} placement="bottomRight">
+                      <Tooltip title="Xem tài liệu ManPages theo hệ điều hành hoặc Document của câu lệnh">
+                        <Button className="manpage-btn" icon={<ReadOutlined />}>
+                          <span className="manpage-btn-text">ManPages or Docs</span>
+                          <DownOutlined className="manpage-btn-arrow" style={{ fontSize: '10px' }} />
+                        </Button>
+                      </Tooltip>
+                    </Dropdown>
+                  </div>
+                )}
+
+                {/* NÚT CHIA SẺ VÀ YÊU THÍCH */}
+                <div className="program-action-btns" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <ShareButton title={`Chia sẻ lệnh ${programData.name}`} size="20px" />
                   <FavoriteButton programId={programData.id} />
                 </div>
               </div>
@@ -173,26 +185,25 @@ const ProgramDetails = () => {
         >
           {programData.categories && programData.categories.length > 0 && (
             <Space className="category-tags-wrapper" wrap>
-              {programData.categories.map(cat => 
+              {programData.categories.map(cat =>
                 <Link key={cat.id} to={`/${cat.topic?.slug}/categories/${cat.slug}`} style={{ textDecoration: 'none' }}>
                   <Tag color="purple">{cat.name}</Tag>
                 </Link>
               )}
             </Space>
           )}
-          
+
           {/* ========Description======== */}
           {programData.description ? (
-            <div 
-              className="description-text tiptap-content" 
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(programData.description) }} 
+            <div
+              className="description-text tiptap-content"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(programData.description) }}
             />
           ) : (
             <Paragraph className="description-text">
               Chưa có mô tả cho lệnh này.
             </Paragraph>
           )}
-          <br />
           {/* ========Description======== */}
 
           <ExamplesSection examplesList={generalExamples} title="Examples" />
@@ -219,20 +230,20 @@ const ProgramDetails = () => {
       {programData.option_groups?.map(group => {
         const groupOptions = programData.options?.filter(o => o.group_id === group.id) || [];
         const groupExamples = allExamples.filter(e => e.group_id === group.id && !e.option_id);
-        
+
         return (
           <div key={group.id} className="group-section">
             <Title level={3} className="group-title">{group.title}</Title>
-            
+
             {group.description && group.description.trim() !== "" && (
-              <div 
-                className="group-desc tiptap-content" 
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }} 
+              <div
+                className="group-desc tiptap-content"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(group.description) }}
               />
             )}
-            
-            <ExamplesSection examplesList={groupExamples} title="Ví Dụ" />
-            
+
+            <ExamplesSection examplesList={groupExamples} title="Examples" />
+
             <div className="group-options-wrapper">
               {groupOptions.length > 0 ? (
                 groupOptions.map(opt => <OptionsSection key={opt.id} opt={opt} allExamples={allExamples} />)

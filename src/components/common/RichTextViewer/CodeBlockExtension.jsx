@@ -4,31 +4,18 @@ import { NodeViewWrapper, NodeViewContent, ReactNodeViewRenderer } from '@tiptap
 import CodeBlock from '@tiptap/extension-code-block';
 import { Button, Tooltip } from 'antd';
 import { CopyOutlined, CheckOutlined } from '@ant-design/icons';
-
-async function copyText(text) {
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-  // Fallback cho HTTP / IP LAN không an toàn
-  const textArea = document.createElement('textarea');
-  textArea.value = text;
-  textArea.style.position = 'absolute';
-  textArea.style.left = '-999999px';
-  document.body.appendChild(textArea);
-  textArea.select();
-  document.execCommand('copy');
-  textArea.remove();
-}
+import { copyToClipboard } from '../../../utils/helpers';
 
 const CodeBlockComponent = ({ node }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await copyText(node.textContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
+      const success = await copyToClipboard(node.textContent);
+      if (success) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
     } catch (err) {
       console.error('Lỗi khi copy:', err);
     }
