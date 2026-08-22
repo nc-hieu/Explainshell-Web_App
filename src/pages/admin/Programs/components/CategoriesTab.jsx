@@ -184,14 +184,16 @@ const CategoriesTab = ({ editingProgram, setEditingProgram, fetchPrograms, filte
         />
       </Form.Item>
       
-      <Button 
-        type="primary" 
-        htmlType="submit" 
-        icon={<SaveOutlined />}
-        loading={loading}
-      >
-        Lưu Danh Mục
-      </Button>
+      <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
+        <Button 
+          type="primary" 
+          htmlType="submit" 
+          icon={<SaveOutlined />}
+          loading={loading}
+        >
+          Lưu Danh Mục
+        </Button>
+      </Form.Item>
     </Form>
   );
 };

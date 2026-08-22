@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Popconfirm, message, Typography } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Popconfirm, message, Typography, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { noteService } from '../../../../services/note.service';
+import { hasRichTextContent } from '../../../../utils/helpers';
 import RichTextEditor from '../../../../components/common/RichTextEditor';
 import DOMPurify from 'dompurify';
 
@@ -10,7 +11,11 @@ const { Text } = Typography;
 const NotesTab = ({ editingProgram }) => {
   const [notesList, setNotesList] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
+  // State quản lý phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [form] = Form.useForm();
@@ -18,6 +23,7 @@ const NotesTab = ({ editingProgram }) => {
   // Load danh sách ghi chú khi mở Tab của một Lệnh cụ thể
   useEffect(() => {
     if (editingProgram?.id) {
+      setCurrentPage(1);
       fetchNotes(editingProgram.id);
     }
   }, [editingProgram]);
@@ -28,7 +34,7 @@ const NotesTab = ({ editingProgram }) => {
       const data = await noteService.getByProgram(programId);
       setNotesList(Array.isArray(data) ? data : []);
     } catch (error) {
-      message.error('Không thể tải danh sách Ghi chú!');
+      message.error('Không thể tải danh sách Notes!');
     } finally {
       setLoading(false);
     }
@@ -49,10 +55,10 @@ const NotesTab = ({ editingProgram }) => {
   const handleDelete = async (id) => {
     try {
       await noteService.delete(id);
-      message.success('Đã xóa ghi chú thành công!');
+      message.success('Đã xóa Note thành công!');
       fetchNotes(editingProgram.id);
     } catch (error) {
-      message.error('Lỗi khi xóa ghi chú!');
+      message.error('Lỗi khi xóa Note!');
     }
   };
 
@@ -66,42 +72,32 @@ const NotesTab = ({ editingProgram }) => {
 
       if (editingNote) {
         await noteService.update(editingNote.id, submitData);
-        message.success('Cập nhật ghi chú thành công!');
+        message.success('Cập nhật Note thành công!');
       } else {
         await noteService.create(submitData);
-        message.success('Thêm ghi chú mới thành công!');
+        message.success('Thêm Note mới thành công!');
       }
-      
+
       setIsModalVisible(false);
       fetchNotes(editingProgram.id);
     } catch (error) {
-      message.error('Có lỗi xảy ra khi lưu ghi chú!');
+      message.error('Có lỗi xảy ra khi lưu Note!');
     }
   };
 
   const columns = [
     {
-      title: 'Tiêu đề Ghi chú',
+      title: 'Tiêu đề Note',
       dataIndex: 'title',
-      // width: '30%',
-      render: (text) => <Text strong>{text}</Text>,
+      render: (text) => <Text>{text}</Text>,
     },
-    // {
-    //   title: 'Nội dung',
-    //   dataIndex: 'content',
-    //   render: (content) => (
-    //     // Chỉ hiển thị tối đa 2 dòng mô tả ở ngoài bảng cho gọn
-    //     <div 
-    //       style={{ 
-    //         display: '-webkit-box', 
-    //         WebkitLineClamp: 2, 
-    //         WebkitBoxOrient: 'vertical', 
-    //         overflow: 'hidden' 
-    //       }}
-    //       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} 
-    //     />
-    //   ),
-    // },
+    {
+      title: 'Nội dung',
+      dataIndex: 'content',
+      render: (content) => (
+        hasRichTextContent(content) ? <Tag color="green">Có Nội Dung</Tag> : <Tag color="red">Không Nội Dung</Tag>
+      )
+    },
     {
       title: 'Hành động',
       key: 'action',
@@ -109,7 +105,7 @@ const NotesTab = ({ editingProgram }) => {
       render: (_, record) => (
         <Space size="middle">
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>Sửa</Button>
-          <Popconfirm title="Xóa ghi chú này?" onConfirm={() => handleDelete(record.id)}>
+          <Popconfirm title="Xóa Note này?" onConfirm={() => handleDelete(record.id)}>
             <Button danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
@@ -119,23 +115,35 @@ const NotesTab = ({ editingProgram }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Text type="secondary">Quản lý các Ghi chú, Mẹo hay (Tips), Lưu ý bảo mật... cho lệnh này.</Text>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-          Thêm Ghi chú
+          Thêm Note
         </Button>
       </div>
 
-      <Table 
-        columns={columns} 
-        dataSource={notesList} 
-        loading={loading} 
-        rowKey="id" 
-        pagination={{ pageSize: 10 }} 
+      <Table
+        columns={columns}
+        dataSource={notesList}
+        loading={loading}
+        rowKey="id"
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: notesList.length,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} note`,
+          onChange: (page, newPageSize) => {
+            setCurrentPage(page);
+            setPageSize(newPageSize);
+          }
+        }}
       />
 
       <Modal
-        title={editingNote ? "Chỉnh sửa Ghi chú" : "Thêm Ghi chú mới"}
+        title={editingNote ? "Chỉnh sửa Note" : "Thêm Note mới"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
@@ -143,17 +151,17 @@ const NotesTab = ({ editingProgram }) => {
         destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-          <Form.Item 
-            name="title" 
-            label="Tiêu đề Ghi chú" 
+          <Form.Item
+            name="title"
+            label="Tiêu đề Note"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề!' }]}
           >
             <Input placeholder="Ví dụ: Lưu ý quan trọng khi dùng cờ --force..." />
           </Form.Item>
 
-          <Form.Item 
-            name="content" 
-            label="Nội dung" 
+          <Form.Item
+            name="content"
+            label="Nội dung"
             rules={[{ required: true, message: 'Vui lòng nhập nội dung!' }]}
           >
             <RichTextEditor />

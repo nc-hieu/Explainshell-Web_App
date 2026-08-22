@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Popconfirm, message, Tag, Select, InputNumber, Row, Col } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Popconfirm, message, Tag, Select, InputNumber, Row, Col, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { manPageService } from '../../../../services/manPage.service';
 import { osDistributionService } from '../../../../services/osDistribution.service';
 import RichTextEditor from '../../../../components/common/RichTextEditor';
-import { getImageUrl } from '../../../../utils/helpers'; 
+import { getImageUrl, hasRichTextContent } from '../../../../utils/helpers';
+
+const { Text } = Typography;
 
 const ManPagesTab = ({ editingProgram }) => {
   const [manPagesList, setManPagesList] = useState([]);
   const [distroList, setDistroList] = useState([]); // State lưu danh sách Distro
   const [loadingManPages, setLoadingManPages] = useState(false);
 
+  // State quản lý phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [isGroupModalVisible, setIsGroupModalVisible] = useState(false);
   const [editingManPage, setEditingManPage] = useState(null);
   const [formGroup] = Form.useForm();
-  
+
   useEffect(() => {
     if (editingProgram?.id) {
+      setCurrentPage(1);
       fetchManPages(editingProgram.id);
     }
   }, [editingProgram]);
@@ -34,7 +41,7 @@ const ManPagesTab = ({ editingProgram }) => {
       const manpage = Array.isArray(manpageData) ? manpageData : manpageData.items || [];
       setDistroList(distro);
       setManPagesList(manpage);
-      
+
     } catch (e) {
       message.error('Lỗi tải ManPages!');
     } finally {
@@ -46,19 +53,19 @@ const ManPagesTab = ({ editingProgram }) => {
     setEditingManPage(manPages);
     if (manPages) {
       formGroup.setFieldsValue({
-      ...manPages,
-      distro_id: manPages.os_id || manPages.os?.id 
-    });
+        ...manPages,
+        distro_id: manPages.os_id || manPages.os?.id
+      });
     } else {
       formGroup.resetFields();
     }
     setIsGroupModalVisible(true);
   };
 
-const handleDeleteManpage = async (manPageId) => {
+  const handleDeleteManpage = async (manPageId) => {
     try {
       await manPageService.delete(manPageId);
-      message.success('Đã xóa ManPage cờ!');
+      message.success('Đã xóa ManPage thành công!');
       fetchManPages(editingProgram.id);
     } catch (error) {
       message.error('Lỗi khi xóa ManPage!');
@@ -69,7 +76,7 @@ const handleDeleteManpage = async (manPageId) => {
     try {
       console.log("Data: ", values);
       const submitData = { ...values, program_id: editingProgram.id, os_id: values.distro_id };
-      if (editingManPage){
+      if (editingManPage) {
         await manPageService.update(editingManPage.id, submitData);
         message.success('Cập nhật ManPage thành công!');
       } else {
@@ -85,24 +92,29 @@ const handleDeleteManpage = async (manPageId) => {
 
   //Add dữ liệu vào table
   const maPagesColumns = [
-    { title: 'Distribution', 
+    {
+      title: 'Distribution',
       render: (_, record) => {
-      return(
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {record.os?.icon_url && (
-            <img 
-              src={getImageUrl(record.os.icon_url)} 
-              alt="icon" 
-              style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
-            />)}
-          <span>{record.os?.name}</span>
-        </div>
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {record.os?.icon_url && (
+              <img
+                src={getImageUrl(record.os.icon_url)}
+                alt="icon"
+                style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+              />)}
+            <span>{record.os?.name}</span>
+          </div>
+        )
+      }
+    },
+    {
+      title: 'Nội Dung',
+      dataIndex: 'content',
+      render: (content) => (
+        hasRichTextContent(content) ? <Tag color="green">Có Nội Dung</Tag> : <Tag color="red">Không Nội Dung</Tag>
       )
-    }},
-    {title: 'Nội Dung',
-      render: (record) => {
-      return record.content ? (<Tag color="green">Có Nội Dung</Tag>) : (<Tag color="red">Không</Tag>)
-    }},
+    },
     { title: 'Link', dataIndex: 'source_url' },
     {
       title: 'Hành động',
@@ -110,7 +122,7 @@ const handleDeleteManpage = async (manPageId) => {
       render: (_, r) => (
         <Space>
           <Button icon={<EditOutlined />} onClick={() => handleOpenGroupModal(r)}>Sửa</Button>
-          <Popconfirm title="Xóa ghi chú này?" onConfirm={() => handleDeleteManpage(r.id)}>
+          <Popconfirm title="Xóa ghi ManPage?" onConfirm={() => handleDeleteManpage(r.id)}>
             <Button danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
@@ -119,28 +131,41 @@ const handleDeleteManpage = async (manPageId) => {
   ];
 
 
-  return(
+  return (
     <div>
-      <div style={{ marginBottom: 16, textAlign: 'right' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Text type="secondary">Quản lý tài liệu hướng dẫn gốc (Man Pages) theo từng bản phân phối (OS Distribution).</Text>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenGroupModal(null)}>
           Thêm ManPage
         </Button>
       </div>
 
-      <Table 
-        size="small" 
-        dataSource={manPagesList} 
-        rowKey="id" 
-        loading={loadingManPages} 
-        columns={maPagesColumns} 
-        pagination={{ pageSize: 10 }}
+      <Table
+        size="small"
+        dataSource={manPagesList}
+        rowKey="id"
+        loading={loadingManPages}
+        columns={maPagesColumns}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: manPagesList.length,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} ManPages`,
+          onChange: (page, newPageSize) => {
+            setCurrentPage(page);
+            setPageSize(newPageSize);
+          }
+        }}
       />
 
-      <Modal 
-        title={editingManPage ? "Sửa ManPage" : "Thêm ManPage Mới"} 
+      <Modal
+        title={editingManPage ? "Sửa ManPage" : "Thêm ManPage Mới"}
         width={800}
-        open={isGroupModalVisible} 
-        onCancel={() => setIsGroupModalVisible(false)} 
+        open={isGroupModalVisible}
+        onCancel={() => setIsGroupModalVisible(false)}
         footer={null}
       >
         <Form form={formGroup} layout="vertical" onFinish={handleSaveGroup}>
@@ -149,43 +174,43 @@ const handleDeleteManpage = async (manPageId) => {
               {distroList.map(distro => (
                 <Select.Option key={distro.id} value={distro.id}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {distro.icon_url && (
-                    <img 
-                      src={getImageUrl(distro.icon_url)} 
-                      alt="icon" 
-                      style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
-                    />
-                  )}
-                  <span>{distro.name}</span>
-                </div>
+                    {distro.icon_url && (
+                      <img
+                        src={getImageUrl(distro.icon_url)}
+                        alt="icon"
+                        style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                      />
+                    )}
+                    <span>{distro.name}</span>
+                  </div>
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>    
+          </Form.Item>
 
           <Row gutter={16}> {/* gutter={16} tạo khoảng cách giữa 2 cột */}
             {/* Cột 1: Section (Chiếm 8/24 tương đương 1/3 hàng) */}
             <Col span={8}>
-              <Form.Item 
-                name="section" 
+              <Form.Item
+                name="section"
                 label="Section (Tùy Chọn)"
                 rules={[
                   { type: 'number', message: 'Vui lòng nhập số!' }
                 ]}
               >
-                <InputNumber 
-                  placeholder="VD: 1 (Từ 1 đến 8)" 
-                  style={{ width: '100%' }} 
-                  min={1}                  
-                  max={8}               
+                <InputNumber
+                  placeholder="VD: 1 (Từ 1 đến 8)"
+                  style={{ width: '100%' }}
+                  min={1}
+                  max={8}
                 />
               </Form.Item>
             </Col>
             {/* Cột 2: Link ManPages (Chiếm 16/24 tương đương 2/3 hàng) */}
             <Col span={16}>
-              <Form.Item 
-                name="source_url" 
-                label="Link ManPages" 
+              <Form.Item
+                name="source_url"
+                label="Link ManPages"
                 rules={[{ required: true, message: 'Nhập Link!' }]}
               >
                 <Input placeholder="https://..." />
@@ -199,7 +224,7 @@ const handleDeleteManpage = async (manPageId) => {
 
           <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
             <Button onClick={() => setIsGroupModalVisible(false)} style={{ marginRight: 8 }}>Hủy</Button>
-            <Button type="primary" htmlType="submit">Lưu Nhóm</Button>
+            <Button type="primary" htmlType="submit">Lưu ManPage</Button>
           </Form.Item>
         </Form>
       </Modal>

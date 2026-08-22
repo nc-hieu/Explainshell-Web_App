@@ -50,3 +50,13 @@ export const getFileName = (filePath) => {
   // Cắt chuỗi thành mảng bởi dấu '/' và lấy phần tử cuối cùng
   return filePath.split('/').pop();
 };
+
+/**
+ * Kiểm tra xem chuỗi / mã HTML từ RichTextEditor có nội dung thực tế hay không (tránh trường hợp chỉ có thẻ rỗng như <p></p>, <br>, khoảng trắng).
+ */
+export const hasRichTextContent = (htmlOrText) => {
+  if (!htmlOrText || typeof htmlOrText !== 'string') return false;
+  // Xóa các thẻ HTML, ký tự &nbsp; và khoảng trắng thừa
+  const textOnly = htmlOrText.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  return textOnly.length > 0;
+};

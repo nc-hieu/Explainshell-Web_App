@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Popconfirm, Tag, Select, Radio, message } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Popconfirm, Tag, Select, Radio, message, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { exampleService } from '../../../../services/example.service';
 import { optionService } from '../../../../services/option.service';
 import { optionGroupService } from '../../../../services/optionGroup.service';
+import { hasRichTextContent } from '../../../../utils/helpers';
 import RichTextEditor from '../../../../components/common/RichTextEditor';
+
+const { Text } = Typography;
 
 const ExamplesTab = ({ editingProgram }) => {
   const [examplesList, setExamplesList] = useState([]);
   const [loadingExamples, setLoadingExamples] = useState(false);
-  
+
+  // State quản lý phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   // Dữ liệu dùng cho các ô Select và hiển thị ở Bảng
   const [optionsList, setOptionsList] = useState([]);
   const [groupsList, setGroupsList] = useState([]);
@@ -18,12 +25,13 @@ const ExamplesTab = ({ editingProgram }) => {
   const [isExampleModalVisible, setIsExampleModalVisible] = useState(false);
   const [editingExample, setEditingExample] = useState(null);
   const [formExample] = Form.useForm();
-  
+
   // State quản lý loại ví dụ đang được chọn trong Form
   const [targetType, setTargetType] = useState('program');
 
   useEffect(() => {
     if (editingProgram?.id) {
+      setCurrentPage(1);
       fetchExamples(editingProgram.id);
       fetchDropdownData(editingProgram.id);
     }
@@ -35,7 +43,7 @@ const ExamplesTab = ({ editingProgram }) => {
       const data = await exampleService.getByProgram(programId);
       setExamplesList(Array.isArray(data) ? data : data.items || []);
     } catch (e) {
-      message.error('Lỗi tải danh sách ví dụ!');
+      message.error('Lỗi tải danh sách Example!');
     } finally {
       setLoadingExamples(false);
     }
@@ -56,13 +64,13 @@ const ExamplesTab = ({ editingProgram }) => {
 
   const handleOpenExampleModal = (example = null) => {
     setEditingExample(example);
-    
+
     // Xác định xem ví dụ này (nếu đang sửa) thuộc loại nào để hiển thị Form cho đúng
     let initialTarget = 'program';
     if (example) {
       if (example.option_id) initialTarget = 'option';
       else if (example.group_id) initialTarget = 'group';
-      
+
       formExample.setFieldsValue({
         ...example,
         target_type: initialTarget
@@ -71,7 +79,7 @@ const ExamplesTab = ({ editingProgram }) => {
       formExample.resetFields();
       formExample.setFieldsValue({ target_type: 'program' }); // Mặc định khi thêm mới
     }
-    
+
     setTargetType(initialTarget);
     setIsExampleModalVisible(true);
   };
@@ -79,10 +87,10 @@ const ExamplesTab = ({ editingProgram }) => {
   const handleDeleteExample = async (exampleId) => {
     try {
       await exampleService.delete(exampleId);
-      message.success('Đã xóa ví dụ!');
+      message.success('Đã xóa Example!');
       fetchExamples(editingProgram.id);
     } catch (error) {
-      message.error('Lỗi khi xóa ví dụ!');
+      message.error('Lỗi khi xóa Example!');
     }
   };
 
@@ -101,22 +109,22 @@ const ExamplesTab = ({ editingProgram }) => {
 
       if (editingExample) {
         await exampleService.update(editingExample.id, submitData);
-        message.success('Cập nhật ví dụ thành công!');
+        message.success('Cập nhật Examples thành công!');
       } else {
         await exampleService.create(submitData);
-        message.success('Thêm ví dụ mới thành công!');
+        message.success('Thêm Examples mới thành công!');
       }
       setIsExampleModalVisible(false);
       fetchExamples(editingProgram.id);
     } catch (e) {
-      message.error('Lỗi lưu ví dụ!');
+      message.error('Lỗi lưu Examples!');
     }
   };
 
   // Cấu hình Bảng hiển thị
   const exampleColumns = [
-    { 
-      title: 'Phân loại', 
+    {
+      title: 'Phân loại',
       key: 'target',
       width: '18%',
       render: (_, record) => {
@@ -135,14 +143,19 @@ const ExamplesTab = ({ editingProgram }) => {
         return <Tag color="green">Lệnh chung</Tag>;
       }
     },
-    { 
-      title: 'Câu lệnh', 
-      dataIndex: 'command_line', 
-      render: text => <Tag color="geekblue">{text}</Tag> 
+    {
+      title: 'Câu lệnh / Chủ đề',
+      dataIndex: 'command_line',
+      render: (text) => (
+        text && text.trim() ? <Tag color="geekblue">{text}</Tag> : <Tag color="red">Không Nội Dung</Tag>
+      )
     },
-    { 
-      title: 'Giải thích', 
-      dataIndex: 'explanation' 
+    {
+      title: 'Giải thích',
+      dataIndex: 'explanation',
+      render: (explanation) => (
+        hasRichTextContent(explanation) ? <Tag color="green">Có Nội Dung</Tag> : <Tag color="red">Không Nội Dung</Tag>
+      )
     },
     {
       title: 'Hành động',
@@ -155,7 +168,7 @@ const ExamplesTab = ({ editingProgram }) => {
           </Popconfirm> */}
 
           <Button icon={<EditOutlined />} onClick={() => handleOpenExampleModal(r)}>Sửa</Button>
-          <Popconfirm title="Xóa ghi chú này?" onConfirm={() => handleDeleteExample(r.id)}>
+          <Popconfirm title="Xóa Example này?" onConfirm={() => handleDeleteExample(r.id)}>
             <Button danger icon={<DeleteOutlined />}>Xóa</Button>
           </Popconfirm>
         </Space>
@@ -165,44 +178,57 @@ const ExamplesTab = ({ editingProgram }) => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, textAlign: 'right' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Text type="secondary">Quản lý các Examples sử dụng thực tế cho command, option hoặc nhóm option.</Text>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenExampleModal(null)}>
-          Thêm Ví Dụ
+          Thêm Example
         </Button>
       </div>
-      
-      <Table 
-        size="small" 
-        dataSource={examplesList} 
-        rowKey="id" 
-        loading={loadingExamples} 
-        columns={exampleColumns} 
-        pagination={{ pageSize: 10 }}
+
+      <Table
+        size="small"
+        dataSource={examplesList}
+        rowKey="id"
+        loading={loadingExamples}
+        columns={exampleColumns}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: examplesList.length,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} examples`,
+          onChange: (page, newPageSize) => {
+            setCurrentPage(page);
+            setPageSize(newPageSize);
+          }
+        }}
       />
 
-      <Modal 
-        title={editingExample ? "Sửa Ví dụ" : "Thêm Ví dụ Mới"} 
+      <Modal
+        title={editingExample ? "Sửa Example" : "Thêm Example Mới"}
         width={800}
-        open={isExampleModalVisible} 
-        onCancel={() => setIsExampleModalVisible(false)} 
+        open={isExampleModalVisible}
+        onCancel={() => setIsExampleModalVisible(false)}
         footer={null}
         destroyOnClose
       >
         <Form form={formExample} layout="vertical" onFinish={handleSaveExample}>
-          
+
           {/* Radio Button để chọn Loại Ví Dụ */}
-          <Form.Item name="target_type" label="Ví dụ này giải thích cho:" rules={[{ required: true }]}>
+          <Form.Item name="target_type" label="Example này giải thích cho:" rules={[{ required: true }]}>
             <Radio.Group onChange={(e) => setTargetType(e.target.value)} buttonStyle="solid">
               <Radio.Button value="program">Base</Radio.Button>
-              <Radio.Button value="option">Cờ lệnh (Options)</Radio.Button>
-              <Radio.Button value="group">Nhóm cờ (Groups)</Radio.Button>
+              <Radio.Button value="option">Option</Radio.Button>
+              <Radio.Button value="group">Option Group</Radio.Button>
             </Radio.Group>
           </Form.Item>
 
           {/* Hiển thị Dropdown Chọn Nhóm nếu chọn loại Nhóm cờ */}
           {targetType === 'group' && (
-            <Form.Item name="group_id" label="Chọn Nhóm cờ" rules={[{ required: true, message: 'Vui lòng chọn một nhóm cờ!' }]}>
-              <Select placeholder="Chọn nhóm cờ...">
+            <Form.Item name="group_id" label="Chọn Option Group" rules={[{ required: true, message: 'Vui lòng chọn một nhóm cờ!' }]}>
+              <Select placeholder="Chọn option group...">
                 {groupsList.map(grp => (
                   <Select.Option key={grp.id} value={grp.id}>{grp.title}</Select.Option>
                 ))}
@@ -212,8 +238,8 @@ const ExamplesTab = ({ editingProgram }) => {
 
           {/* Hiển thị Dropdown Chọn Cờ nếu chọn loại Cờ lệnh */}
           {targetType === 'option' && (
-            <Form.Item name="option_id" label="Chọn Cờ lệnh" rules={[{ required: true, message: 'Vui lòng chọn một cờ lệnh!' }]}>
-              <Select placeholder="Chọn cờ lệnh...">
+            <Form.Item name="option_id" label="Chọn Option" rules={[{ required: true, message: 'Vui lòng chọn một option!' }]}>
+              <Select placeholder="Chọn option...">
                 {optionsList.map(opt => (
                   <Select.Option key={opt.id} value={opt.id}>
                     {opt.short_name || opt.long_name}
@@ -223,17 +249,17 @@ const ExamplesTab = ({ editingProgram }) => {
             </Form.Item>
           )}
 
-          <Form.Item name="command_line" label="Câu Lệnh Hoặc Chủ Đề" rules={[{ required: true, message: 'Vui lòng nhập câu lệnh!' }]}>
+          <Form.Item name="command_line" label="Câu Lệnh Hoặc Chủ Đề">
             <Input placeholder="VD: tar -xvf archive.tar -or- Chủ đề..." />
           </Form.Item>
-          
+
           <Form.Item name="explanation" label="Giải Thích" rules={[{ message: 'Vui lòng nhập giải thích!' }]}>
             <RichTextEditor />
           </Form.Item>
-          
+
           <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
             <Button onClick={() => setIsExampleModalVisible(false)} style={{ marginRight: 8 }}>Hủy</Button>
-            <Button type="primary" htmlType="submit">Lưu Ví Dụ</Button>
+            <Button type="primary" htmlType="submit">Lưu Example</Button>
           </Form.Item>
         </Form>
       </Modal>
