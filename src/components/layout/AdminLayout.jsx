@@ -42,8 +42,20 @@ const AdminLayout = () => {
 
   return (
     <Layout className="admin-layout">
-      {/* Sider tự động ăn theo ConfigProvider trong App.jsx */}
-      <Sider trigger={null} collapsible collapsed={collapsed}>
+      {/* Sider tự động ăn theo ConfigProvider trong App.jsx và cố định vị trí khi cuộn */}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          zIndex: 100
+        }}
+      >
         <div className="admin-logo">
           {collapsed ? 'EX' : 'EXPLAINSHELL'}
         </div>

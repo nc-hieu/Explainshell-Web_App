@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { userService } from '../../../services/user.service';
 import { programService } from '../../../services/program.service';
 import { topicService } from '../../../services/topic.service';
+import { categoryService } from '../../../services/category.service';
 import { historyService } from '../../../services/history.service';
 
 import './Dashboard.scss';
@@ -135,20 +136,44 @@ const Dashboard = () => {
   const fetchProgramsByTopic = async () => {
     setTopicLoading(true);
     try {
-      const topicsRes = await topicService.getAll(0, 100);
-      const topics = Array.isArray(topicsRes) ? topicsRes : topicsRes.items || [];
+      const [topicsRes, categoriesRes, programsRes] = await Promise.all([
+        topicService.getAll(0, 100),
+        categoryService.getAll(0, 500),
+        programService.getAll(0, 10000)
+      ]);
 
-      const results = await Promise.all(
-        topics.map(async (topic) => {
-          try {
-            const programsRes = await programService.getByTopic(topic.slug, 0, 1);
-            const count = Array.isArray(programsRes) ? programsRes.length : programsRes.items?.length || 0;
-            return { name: topic.name, count };
-          } catch {
-            return { name: topic.name, count: 0 };
+      const topics = Array.isArray(topicsRes) ? topicsRes : topicsRes.items || [];
+      const categories = Array.isArray(categoriesRes) ? categoriesRes : categoriesRes.items || [];
+      const programs = Array.isArray(programsRes) ? programsRes : programsRes.items || [];
+
+      // Bản đồ ánh xạ category_id -> topic_id
+      const categoryTopicMap = new Map();
+      categories.forEach(cat => {
+        if (cat.id && cat.topic_id) {
+          categoryTopicMap.set(cat.id, cat.topic_id);
+        }
+      });
+
+      // Đếm số lệnh theo topic_id (1 lệnh thuộc nhiều category trong cùng 1 topic chỉ tính 1 lần)
+      const topicCountMap = new Map();
+      programs.forEach(prog => {
+        const topicIds = new Set();
+        (prog.categories || []).forEach(cat => {
+          const topicId = categoryTopicMap.get(cat.id);
+          if (topicId) {
+            topicIds.add(topicId);
           }
-        })
-      );
+        });
+
+        topicIds.forEach(topicId => {
+          topicCountMap.set(topicId, (topicCountMap.get(topicId) || 0) + 1);
+        });
+      });
+
+      const results = topics.map(topic => ({
+        name: topic.name,
+        count: topicCountMap.get(topic.id) || 0
+      }));
 
       setTopicData(results.filter(t => t.count > 0).sort((a, b) => b.count - a.count));
     } catch (error) {
