@@ -41,6 +41,7 @@
       font-size: 0.95rem;
       margin-bottom: 16px;
       display: -webkit-box;
+      line-clamp: 2;
       -webkit-line-clamp: 2; /* Chỉ hiện tối đa 2 dòng mô tả */
       -webkit-box-orient: vertical;
       overflow: hidden;
@@ -55,11 +56,74 @@
   padding: 24px 20px;
 
   .page-header {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+  }
+
+  .topic-header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+
+    .topic-header-left {
+      flex: 1;
+      min-width: 280px;
+
+      .topic-title-group {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+
+        .topic-icon-box {
+          width: 52px;
+          height: 52px;
+          border-radius: 10px;
+          background-color: var(--bg-card);
+          border: 1px solid var(--border-color);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .topic-header-title {
+          margin: 0 !important;
+          color: var(--text-primary);
+          font-size: 1.5rem;
+          font-weight: 700;
+        }
+      }
+
+      .topic-header-desc {
+        margin-top: 10px;
+        margin-bottom: 0;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        color: var(--text-secondary);
+        max-width: 680px;
+        text-align: left;
+      }
+    }
+
+    .topic-header-right {
+      display: flex;
+      align-items: center;
+      min-width: 280px;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        .ant-input-search {
+          max-width: 100% !important;
+        }
+      }
+    }
   }
 
   .section-title {
-    margin-top: 32px;
+    margin-top: 24px;
     margin-bottom: 16px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border-color);
@@ -118,6 +182,8 @@
 
   /* Dòng hiển thị Lệnh */
   .program-list-item {
+    text-decoration: none;
+    color: inherit;
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;

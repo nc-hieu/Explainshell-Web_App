@@ -6,13 +6,13 @@ import { topicService } from '../../../services/topic.service';
 import { getImageUrl } from '../../../utils/helpers';
 
 // Import CSS từ thư mục Categories để dùng chung style (Card, Grid, Header...)
-import './Topics.scss'; 
+import './Topics.scss';
 
 const { Title, Text } = Typography;
 
 const Topics = () => {
   const navigate = useNavigate();
-  
+
   const [loading, setLoading] = useState(false);
   const [topics, setTopics] = useState([]);
   const [searchText, setSearchText] = useState('');
@@ -27,7 +27,7 @@ const Topics = () => {
       // 1. Gọi API lấy danh sách Topics (Lấy số lượng lớn)
       const data = await topicService.getAll(0, 100);
       const items = Array.isArray(data) ? data : (data.items || []);
-      
+
       // LỌC: Chỉ giữ lại các Topic được đánh dấu là Nổi bật (is_featured = true)
       const featuredTopics = items.filter(topic => topic.is_featured === true);
 
@@ -35,7 +35,7 @@ const Topics = () => {
         // 2. Gom tất cả ID lại để gọi API Bulk Stats của Topics
         const topicIds = featuredTopics.map(t => t.id);
         const stats = await topicService.getBulkStats(topicIds);
-        
+
         // 3. Chuyển mảng stats thành dạng Object để dễ tra cứu
         const statsMap = {};
         if (Array.isArray(stats)) {
@@ -62,14 +62,14 @@ const Topics = () => {
   };
 
   // Logic lọc tìm kiếm theo chữ gõ trên thanh Search
-  const filteredTopics = topics.filter(topic => 
+  const filteredTopics = topics.filter(topic =>
     topic.name.toLowerCase().includes(searchText.toLowerCase()) ||
     (topic.description && topic.description.toLowerCase().includes(searchText.toLowerCase()))
   );
 
   return (
     <div className="topic-page">
-      
+
       {/* KHU VỰC HEADER VÀ TÌM KIẾM */}
       <div className="header-section">
         <Title level={2} style={{ color: 'var(--text-primary)' }}>
@@ -79,7 +79,7 @@ const Topics = () => {
         <Text type="secondary" style={{ fontSize: '1.1rem' }}>
           Khám phá và tìm hiểu các câu lệnh thông qua các hệ sinh thái lớn
         </Text>
-        
+
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <Input.Search
             placeholder="Tìm kiếm chủ đề (VD: linux, docker, git...)"
@@ -101,19 +101,19 @@ const Topics = () => {
         <Row gutter={[24, 24]}>
           {filteredTopics.map(topic => (
             <Col xs={24} sm={12} md={8} key={topic.id}>
-              
+
               {/* Card Topic, bấm vào sẽ chuyển sang trang TopicDetails (VD: /linux/categories) */}
-              <Card 
-                className="topic-card" 
-                onClick={() => navigate(`/${topic.slug}/categories`)} 
+              <Card
+                className="topic-card"
+                onClick={() => navigate(`/${topic.slug}/categories`)}
                 bordered={false}
               >
                 <div>
                   {topic.icon_url ? (
-                    <img 
-                      src={getImageUrl(topic.icon_url)} 
-                      alt={`Icon của ${topic.name}`} 
-                      style={{ width: '50px', height: '50px', objectFit: 'contain' }} 
+                    <img
+                      src={getImageUrl(topic.icon_url)}
+                      alt={`Icon của ${topic.name}`}
+                      style={{ width: '50px', height: '50px', objectFit: 'contain' }}
                     />
                   ) : (
                     // Tránh dùng lại FolderOpenOutlined, dùng AppstoreOutlined cho cấp Topic
@@ -127,7 +127,7 @@ const Topics = () => {
                 <div className="card-desc">
                   {topic.description || 'Chưa có mô tả cho chủ đề này.'}
                 </div>
-                
+
                 {/* Khu vực hiển thị Tag Thống kê */}
                 <Space wrap>
                   {topic.stats.categories_count > 0 && (
@@ -142,7 +142,7 @@ const Topics = () => {
                       {topic.stats.programs_count} lệnh
                     </Tag>
                   )}
-                  
+
                   {topic.stats.categories_count === 0 && topic.stats.programs_count === 0 && (
                     <Tag color="default">Chưa có dữ liệu</Tag>
                   )}

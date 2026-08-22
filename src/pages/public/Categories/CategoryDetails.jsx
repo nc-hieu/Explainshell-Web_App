@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { Typography, Breadcrumb, Input, Spin, Row, Col, Card, Empty, Space, Tag, Button } from 'antd';
-import { 
-  HomeOutlined, 
-  AppstoreOutlined, 
-  FolderOpenOutlined, 
+import {
+  HomeOutlined,
+  AppstoreOutlined,
+  FolderOpenOutlined,
   CodeOutlined,
   SearchOutlined,
-  EyeOutlined,         
-  EyeInvisibleOutlined 
+  EyeOutlined,
+  EyeInvisibleOutlined
 } from '@ant-design/icons';
 import { categoryService } from '../../../services/category.service';
 import { getImageUrl } from '../../../utils/helpers';
@@ -49,12 +49,12 @@ const CategoryDetails = () => {
     try {
       // 1. Gọi API lấy chi tiết Danh mục hiện tại
       const data = await categoryService.getBySlug(catSlug);
-      
+
       // 2. Nếu có danh mục con, gọi thêm API lấy thống kê (Bulk-stats)
       if (data.subcategories && data.subcategories.length > 0) {
         const subIds = data.subcategories.map(sub => sub.id);
         const stats = await categoryService.getBulkStats(subIds);
-        
+
         const statsMap = {};
         if (Array.isArray(stats)) {
           stats.forEach(s => {
@@ -82,7 +82,7 @@ const CategoryDetails = () => {
   const handleSubcategoryClick = (sub) => {
     // Lưu lại danh mục HIỆN TẠI vào lịch sử để truyền cho trang tiếp theo
     const newTrail = [
-      ...breadcrumbTrail, 
+      ...breadcrumbTrail,
       { title: categoryData.name, slug: categoryData.slug || categoryData.name }
     ];
 
@@ -113,24 +113,24 @@ const CategoryDetails = () => {
 
   // Lọc danh sách Lệnh (Programs) theo từ khóa tìm kiếm
   const programs = categoryData.programs || [];
-  const filteredPrograms = programs.filter(p => 
-    p.name.toLowerCase().includes(searchProgramText.toLowerCase()) || 
+  const filteredPrograms = programs.filter(p =>
+    p.name.toLowerCase().includes(searchProgramText.toLowerCase()) ||
     (p.description && p.description.toLowerCase().includes(searchProgramText.toLowerCase()))
   );
 
   const subcategories = categoryData.subcategories || [];
   return (
-    {/* Thêm class categories-page ĐỘNG nếu là Linux để nó nhận diện được SCSS của trang Categories tổng */},
+    {/* Thêm class categories-page ĐỘNG nếu là Linux để nó nhận diện được SCSS của trang Categories tổng */ },
     <div className={"category-details-page"}>
-      
+
       {/* 1. THANH ĐIỀU HƯỚNG (BREADCRUMB) LŨY TIẾN */}
       <Breadcrumb className="page-header" items={[
         { title: <Link to="/"><HomeOutlined /> Trang chủ</Link> },
         { title: <Link to="/topics"><AppstoreOutlined /> Thư viện</Link> },
-        
+
         // Hiển thị Topic cha hiện tại từ dữ liệu API trả về
-        ...(categoryData.topic ? [{ 
-          title: <Link to={`/${topic_slug}/categories`}>{categoryData.topic.name}</Link> 
+        ...(categoryData.topic ? [{
+          title: <Link to={`/${topic_slug}/categories`}>{categoryData.topic.name}</Link>
         }] : []),
 
         // Render tự động các danh mục cha từ lịch sử truyền sang
@@ -143,8 +143,8 @@ const CategoryDetails = () => {
       {/* 2. HEADER CỦA DANH MỤC */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <Title level={2} 
-            style={{ 
+          <Title level={2}
+            style={{
               margin: 0, color: 'var(--text-primary)',
               display: 'flex',          // Kích hoạt Flexbox
               alignItems: 'center',
@@ -152,17 +152,17 @@ const CategoryDetails = () => {
             }}>
             {categoryData.icon_url ? (
               // Nếu CÓ icon_url: Hiển thị hình ảnh
-              <img 
-                src={getImageUrl(categoryData.icon_url)} 
-                alt={`Icon của ${categoryData.name}`} 
+              <img
+                src={getImageUrl(categoryData.icon_url)}
+                alt={`Icon của ${categoryData.name}`}
                 style={{ width: '36px', height: '36px', objectFit: 'contain' }}
               />) : (
-                // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
+              // Nếu KHÔNG có icon_url: Hiển thị icon thư mục mặc định của Ant Design
               <FolderOpenOutlined style={{ color: 'var(--color-primary)' }} />
-            )}            
+            )}
             {categoryData.name}
           </Title>
-          
+
         </div>
 
         {/* Ô TÌM KIẾM LỆNH TRONG DANH MỤC NÀY */}
@@ -189,7 +189,7 @@ const CategoryDetails = () => {
       {/* 3. HIỂN THỊ DANH MỤC CON */}
       {subcategories.length > 0 && (
         <div style={{ marginTop: 24 }}>
-          <Title level={4} className="section-title" style={{color: 'var(--color-primary)'}} >
+          <Title level={4} className="section-title" style={{ color: 'var(--color-primary)' }} >
             <FolderOpenOutlined /> Danh mục con
           </Title>
           {/* Thay đổi khoảng cách cột (gutter) tùy thuộc vào giao diện nào đang hiển thị */}
@@ -197,8 +197,8 @@ const CategoryDetails = () => {
             {subcategories.map(sub => (
               // <Col xs={24} sm={12} md={isLinuxCategory ? 8 : 12} key={sub.id}>
               <Col xs={24} sm={12} md={8} key={sub.id}>
-                <Card 
-                  className="subcategory-card" 
+                <Card
+                  className="subcategory-card"
                   size="small"
                   onClick={() => handleSubcategoryClick(sub)}
                   bordered={false}
@@ -206,17 +206,17 @@ const CategoryDetails = () => {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                     {sub.icon_url ? (
-                      <img 
-                        src={getImageUrl(sub.icon_url)} 
-                        alt={`Icon của ${sub.name}`} 
+                      <img
+                        src={getImageUrl(sub.icon_url)}
+                        alt={`Icon của ${sub.name}`}
                         style={{ width: '24px', height: '24px', objectFit: 'contain' }}
                       />
                     ) : (
                       <FolderOpenOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} />
-                    )}           
+                    )}
                     <Text strong style={{ fontSize: '1rem' }}>{sub.name}</Text>
                   </div>
-                          
+
                   {sub.stats && (
                     <Space wrap>
                       {sub.stats.subcategories_count > 0 && (
@@ -243,24 +243,24 @@ const CategoryDetails = () => {
 
       {/* 4. HIỂN THỊ DANH SÁCH LỆNH (PROGRAMS) */}
       <div style={{ marginTop: 32 }}>
-        
+
         {/* NÚT ĐIỀU KHIỂN ẨN/HIỆN LỆNH */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          borderBottom: '1px solid var(--border-color)', 
-          paddingBottom: '12px', 
-          marginBottom: '16px' 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: '1px solid var(--border-color)',
+          paddingBottom: '12px',
+          marginBottom: '16px'
         }}>
-          <Title level={4} style={{ margin: 0, color: 'var(--color-primary)'}}>
+          <Title level={4} style={{ margin: 0, color: 'var(--color-primary)' }}>
             <CodeOutlined /> Danh sách câu lệnh
           </Title>
 
           {/* Chỉ hiện nút bấm nếu danh mục này thực sự có chứa câu lệnh */}
           {programs.length > 0 && (
-            <Button 
-              type="dashed" 
+            <Button
+              type="dashed"
               icon={showPrograms ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => setShowPrograms(!showPrograms)}
               style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
@@ -269,7 +269,7 @@ const CategoryDetails = () => {
             </Button>
           )}
         </div>
-        
+
         {/* RENDER CÓ ĐIỀU KIỆN (Chỉ hiện khi showPrograms là true) */}
         {showPrograms ? (
           <div>
@@ -278,27 +278,30 @@ const CategoryDetails = () => {
             ) : filteredPrograms.length > 0 ? (
               <div>
                 {filteredPrograms.map(prog => (
-                  <div key={prog.id} className="program-list-item"  onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}>
+                  <Link
+                    key={prog.id}
+                    to={`/programs/${prog.slug || prog.name}`}
+                    className="program-list-item"
+                  >
                     <div className="program-icon">
                       <CodeOutlined />
                     </div>
                     <div>
-                      <div 
+                      <div
                         className="program-title"
-                        // onClick={() => navigate(`/programs/${prog.slug || prog.name}`)}
                       >
                         {prog.name}
                       </div>
                       {prog.description ? (
                         <div
-                          className="tiptap-content program-desc" 
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(prog.description) }} 
-                          style={{ 
-                            display: '-webkit-box', 
-                            WebkitLineClamp: 2, 
-                            WebkitBoxOrient: 'vertical', 
+                          className="tiptap-content program-desc"
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(prog.description) }}
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
                             textAlign: 'left',
-                            overflow: 'hidden' 
+                            overflow: 'hidden'
                           }}
                         />
                       ) : (
@@ -307,7 +310,7 @@ const CategoryDetails = () => {
                         </Paragraph>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -317,7 +320,7 @@ const CategoryDetails = () => {
         ) : (
           // THÔNG BÁO KHI ĐANG ẨN (NẾU KHÔNG CÓ LỆNH THÌ HIỆN EMPTY)
           programs.length === 0 && (
-             <Empty description="Danh mục này chưa có câu lệnh nào" />
+            <Empty description="Danh mục này chưa có câu lệnh nào" />
           )
         )}
 
